@@ -24,37 +24,35 @@
 <script>
   const v = document.getElementById("video");
 
-  // 12:50で切り替え
-  const switchTime = new Date();
-  switchTime.setHours(12, 50, 0, 0);
+  // ★ここに4本の動画URLを入れる（Cloudinaryの.mp4直リンク）
+  const playlist = [
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/test2_rzo70e.mp4",
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/RPReplay_Final1610172217_hqb3sn.mp4",
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/SP03_3_ahu6ts.mp4",
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/video_yu_inb2rm.mp4"
+  ];
 
-  function getPlaylist() {
-    const now = new Date();
+  let soundOn = false;
+  let lastIndex = -1;
 
-    // 切替前
-    if (now < switchTime) {
-      return [
-        "https://res.cloudinary.com/dl06u7sqw/video/upload/test2_rzo70e.mp4"
-      ];
-    }
-
-    // 切替後
-    return [
-      "https://res.cloudinary.com/dl06u7sqw/video/upload/RPReplay_Final1610172217_hqb3sn.mp4"
-    ];
+  function getRandomIndex() {
+    let i;
+    do {
+      i = Math.floor(Math.random() * playlist.length);
+    } while (playlist.length > 1 && i === lastIndex);
+    lastIndex = i;
+    return i;
   }
 
-  let playlist = getPlaylist();
-  let current = 0;
-  let soundOn = false;
-
-  function playVideo(i) {
+  function playRandom() {
+    const i = getRandomIndex();
     v.src = playlist[i];
     v.load();
     v.muted = !soundOn;
     v.play().catch(()=>{});
   }
 
+  // タップで音ON（以降ずっと音あり）
   function enableSound() {
     soundOn = true;
     v.muted = false;
@@ -65,22 +63,13 @@
   document.body.addEventListener("touchstart", enableSound, { once: true });
   document.body.addEventListener("click", enableSound, { once: true });
 
+  // 終わるたびにランダム再生
   v.addEventListener("ended", () => {
-    current = (current + 1) % playlist.length;
-    playVideo(current);
+    playRandom();
   });
 
-  // 10秒ごとにチェックして切り替え
-  setInterval(() => {
-    const newPlaylist = getPlaylist();
-    if (JSON.stringify(newPlaylist) !== JSON.stringify(playlist)) {
-      playlist = newPlaylist;
-      current = 0;
-      playVideo(current);
-    }
-  }, 10000);
-
-  playVideo(current);
+  // 初回
+  playRandom();
 </script>
 
 </body>
