@@ -17,14 +17,11 @@
       width: 100vw;
       height: 100vh;
       position: relative;
-      background: #000;
     }
     video {
       width: 100%;
       height: 100%;
       object-fit: contain;
-      display: block;
-      background: #000;
     }
     .overlay {
       position: absolute;
@@ -36,7 +33,7 @@
 </head>
 <body>
   <div class="wrap">
-    <video id="video" autoplay muted playsinline preload="auto"></video>
+    <video id="video" autoplay muted playsinline></video>
     <button class="overlay" onclick="enableSound()"></button>
   </div>
 
