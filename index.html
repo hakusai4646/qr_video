@@ -44,7 +44,7 @@
 
   <script>
     const playlist = [
-      "https://res.cloudinary.com/dl06u7sqw/video/upload/video_yu.mp4",
+      "https://res.cloudinary.com/dl06u7sqw/video/upload/video_yu_inb2rm.mp4",
       "https://res.cloudinary.com/dl06u7sqw/video/upload/SP03_3_ahu6ts.mp4"
     ];
 
@@ -56,17 +56,25 @@
       v.src = playlist[i];
       v.load();
       v.muted = !soundOn;
-      v.play().catch(()=>{});
+      v.play().catch(() => {
+        current = (current + 1) % playlist.length;
+        if (current !== i) playVideo(current);
+      });
     }
 
     function enableSound() {
       soundOn = true;
       v.muted = false;
-      v.play().catch(()=>{});
+      v.play().catch(() => {});
       document.querySelector(".overlay").style.display = "none";
     }
 
     v.addEventListener("ended", () => {
+      current = (current + 1) % playlist.length;
+      playVideo(current);
+    });
+
+    v.addEventListener("error", () => {
       current = (current + 1) % playlist.length;
       playVideo(current);
     });
