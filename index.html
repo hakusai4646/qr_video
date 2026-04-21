@@ -19,12 +19,11 @@
 </head>
 <body>
 
-<video id="video" autoplay muted playsinline webkit-playsinline></video>
+<video id="video" autoplay muted playsinline></video>
 
 <script>
   const v = document.getElementById("video");
 
-  // ★ここに4本の動画URLを入れる（Cloudinaryの.mp4直リンク）
   const playlist = [
     "https://res.cloudinary.com/dl06u7sqw/video/upload/test2_rzo70e.mp4",
     "https://res.cloudinary.com/dl06u7sqw/video/upload/RPReplay_Final1610172217_hqb3sn.mp4",
@@ -33,43 +32,34 @@
   ];
 
   let soundOn = false;
-  let lastIndex = -1;
 
-  function getRandomIndex() {
-    let i;
-    do {
-      i = Math.floor(Math.random() * playlist.length);
-    } while (playlist.length > 1 && i === lastIndex);
-    lastIndex = i;
-    return i;
-  }
+  // 前回のインデックス取得
+  let lastIndex = localStorage.getItem("lastVideoIndex");
+  lastIndex = lastIndex ? parseInt(lastIndex) : -1;
 
-  function playRandom() {
-    const i = getRandomIndex();
+  // 次の動画を決定（順番に回す）
+  let nextIndex = (lastIndex + 1) % playlist.length;
+
+  // 保存
+  localStorage.setItem("lastVideoIndex", nextIndex);
+
+  function playVideo(i) {
     v.src = playlist[i];
     v.load();
     v.muted = !soundOn;
     v.play().catch(()=>{});
   }
 
-  // タップで音ON（以降ずっと音あり）
   function enableSound() {
     soundOn = true;
     v.muted = false;
-    v.volume = 1.0;
     v.play().catch(()=>{});
   }
 
-  document.body.addEventListener("touchstart", enableSound, { once: true });
   document.body.addEventListener("click", enableSound, { once: true });
+  document.body.addEventListener("touchstart", enableSound, { once: true });
 
-  // 終わるたびにランダム再生
-  v.addEventListener("ended", () => {
-    playRandom();
-  });
-
-  // 初回
-  playRandom();
+  playVideo(nextIndex);
 </script>
 
 </body>
