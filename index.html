@@ -22,7 +22,7 @@
     video {
       width: 100%;
       height: 100%;
-      object-fit: contain; /* 映像が切れない */
+      object-fit: contain;
       display: block;
       background: #000;
     }
@@ -31,28 +31,44 @@
       inset: 0;
       background: transparent;
       border: none;
-      padding: 0;
-      margin: 0;
     }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <video id="video" autoplay muted playsinline webkit-playsinline preload="auto">
-      <source src="https://res.cloudinary.com/dl06u7sqw/video/upload/SP03_3_ahu6ts.mp4" type="video/mp4">
-    </video>
-
-    <!-- どこでもタップで音ON -->
+    <video id="video" autoplay muted playsinline preload="auto"></video>
     <button class="overlay" onclick="enableSound()"></button>
   </div>
 
   <script>
+    const playlist = [
+      "https://res.cloudinary.com/dl06u7sqw/video/upload/video_yu.mp4",
+      "https://res.cloudinary.com/dl06u7sqw/video/upload/SP03_3_ahu6ts.mp4"
+    ];
+
+    let current = 0;
+    let soundOn = false;
+    const v = document.getElementById("video");
+
+    function playVideo(i) {
+      v.src = playlist[i];
+      v.muted = !soundOn;
+      v.play().catch(()=>{});
+    }
+
     function enableSound() {
-      const v = document.getElementById('video');
+      soundOn = true;
       v.muted = false;
-      v.play();
+      v.play().catch(()=>{});
       document.querySelector('.overlay').style.display = 'none';
     }
+
+    v.addEventListener("ended", () => {
+      current = (current + 1) % playlist.length;
+      playVideo(current);
+    });
+
+    playVideo(current);
   </script>
 </body>
 </html>
