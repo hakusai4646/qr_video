@@ -17,23 +17,28 @@
       width: 100vw;
       height: 100vh;
       position: relative;
+      background: #000;
     }
     video {
       width: 100%;
       height: 100%;
       object-fit: contain;
+      display: block;
+      background: #000;
     }
     .overlay {
       position: absolute;
       inset: 0;
       background: transparent;
       border: none;
+      padding: 0;
+      margin: 0;
     }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <video id="video" autoplay muted playsinline></video>
+    <video id="video" autoplay muted playsinline webkit-playsinline preload="auto"></video>
     <button class="overlay" onclick="enableSound()"></button>
   </div>
 
@@ -49,6 +54,7 @@
 
     function playVideo(i) {
       v.src = playlist[i];
+      v.load();
       v.muted = !soundOn;
       v.play().catch(()=>{});
     }
@@ -57,7 +63,7 @@
       soundOn = true;
       v.muted = false;
       v.play().catch(()=>{});
-      document.querySelector('.overlay').style.display = 'none';
+      document.querySelector(".overlay").style.display = "none";
     }
 
     v.addEventListener("ended", () => {
