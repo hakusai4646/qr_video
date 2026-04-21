@@ -13,12 +13,6 @@
       background: #000;
       overflow: hidden;
     }
-    .wrap {
-      width: 100vw;
-      height: 100vh;
-      position: relative;
-      background: #000;
-    }
     video {
       width: 100%;
       height: 100%;
@@ -26,60 +20,61 @@
       display: block;
       background: #000;
     }
-    .overlay {
-      position: absolute;
-      inset: 0;
-      background: transparent;
-      border: none;
-      padding: 0;
-      margin: 0;
-    }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <video id="video" autoplay muted playsinline webkit-playsinline preload="auto"></video>
-    <button class="overlay" onclick="enableSound()"></button>
-  </div>
 
-  <script>
-    const playlist = [
-      "https://res.cloudinary.com/dl06u7sqw/video/upload/video_yu_inb2rm.mp4",
-      "https://res.cloudinary.com/dl06u7sqw/video/upload/SP03_3_ahu6ts.mp4"
+<video id="video" autoplay muted playsinline></video>
+
+<script>
+  const v = document.getElementById("video");
+
+  // 切り替え時刻（日本時間 2026-04-21 16:00）
+  const switchTime = new Date("2026-04-21T16:00:00+09:00");
+
+  function getPlaylist() {
+    const now = new Date();
+
+    // 切替前
+    if (now < switchTime) {
+      return [
+        "https://res.cloudinary.com/dl06u7sqw/video/upload/video_yu_inb2rm.mp4",
+        "https://res.cloudinary.com/dl06u7sqw/video/upload/SP03_3_ahu6ts.mp4"
+      ];
+    }
+
+    // 切替後（test2_rzo70e）
+    return [
+      "https://res.cloudinary.com/dl06u7sqw/video/upload/test2_rzo70e.mp4"
     ];
+  }
 
-    let current = 0;
-    let soundOn = false;
-    const v = document.getElementById("video");
+  let playlist = getPlaylist();
+  let current = 0;
 
-    function playVideo(i) {
-      v.src = playlist[i];
-      v.load();
-      v.muted = !soundOn;
-      v.play().catch(() => {
-        current = (current + 1) % playlist.length;
-        if (current !== i) playVideo(current);
-      });
-    }
+  function playVideo(i) {
+    v.src = playlist[i];
+    v.play().catch(()=>{});
+  }
 
-    function enableSound() {
-      soundOn = true;
-      v.muted = false;
-      v.play().catch(() => {});
-      document.querySelector(".overlay").style.display = "none";
-    }
-
-    v.addEventListener("ended", () => {
-      current = (current + 1) % playlist.length;
-      playVideo(current);
-    });
-
-    v.addEventListener("error", () => {
-      current = (current + 1) % playlist.length;
-      playVideo(current);
-    });
-
+  v.addEventListener("ended", () => {
+    current = (current + 1) % playlist.length;
     playVideo(current);
-  </script>
+  });
+
+  playVideo(current);
+
+  // 30秒ごとにチェックして切り替え
+  setInterval(() => {
+    const newPlaylist = getPlaylist();
+
+    if (JSON.stringify(newPlaylist) !== JSON.stringify(playlist)) {
+      playlist = newPlaylist;
+      current = 0;
+      playVideo(current);
+    }
+  }, 30000);
+</script>
+
 </body>
 </html>
