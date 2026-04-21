@@ -3,34 +3,30 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title></title>
   <style>
     html, body {
       margin: 0;
       padding: 0;
-      width: 100%;
-      height: 100%;
       background: #000;
-      overflow: hidden;
+      height: 100%;
     }
     video {
       width: 100%;
       height: 100%;
       object-fit: contain;
-      display: block;
-      background: #000;
     }
   </style>
 </head>
 <body>
 
-<video id="video" autoplay muted playsinline></video>
+<video id="video" autoplay muted playsinline webkit-playsinline></video>
 
 <script>
   const v = document.getElementById("video");
 
-  // 切り替え時刻（日本時間 2026-04-21 11:30）
-  const switchTime = new Date("2026-04-21T11:30:00+09:00");
+  // 12:50で切り替え
+  const switchTime = new Date();
+  switchTime.setHours(12, 50, 0, 0);
 
   function getPlaylist() {
     const now = new Date();
@@ -38,47 +34,54 @@
     // 切替前
     if (now < switchTime) {
       return [
-        "https://res.cloudinary.com/dl06u7sqw/video/upload/video_yu_inb2rm.mp4",
-        "https://res.cloudinary.com/dl06u7sqw/video/upload/SP03_3_ahu6ts.mp4"
+        "https://res.cloudinary.com/dl06u7sqw/video/upload/test2_rzo70e.mp4"
       ];
     }
 
     // 切替後
     return [
-      "https://res.cloudinary.com/dl06u7sqw/video/upload/test2_rzo70e.mp4"
+      "https://res.cloudinary.com/dl06u7sqw/video/upload/RPReplay_Final1610172217_hqb3sn.mp4"
     ];
   }
 
   let playlist = getPlaylist();
   let current = 0;
+  let soundOn = false;
 
   function playVideo(i) {
     v.src = playlist[i];
+    v.load();
+    v.muted = !soundOn;
     v.play().catch(()=>{});
   }
+
+  function enableSound() {
+    soundOn = true;
+    v.muted = false;
+    v.volume = 1.0;
+    v.play().catch(()=>{});
+  }
+
+  document.body.addEventListener("touchstart", enableSound, { once: true });
+  document.body.addEventListener("click", enableSound, { once: true });
 
   v.addEventListener("ended", () => {
     current = (current + 1) % playlist.length;
     playVideo(current);
   });
 
-  playVideo(current);
-
-  // 30秒ごとにチェックして切り替え
+  // 10秒ごとにチェックして切り替え
   setInterval(() => {
     const newPlaylist = getPlaylist();
-
     if (JSON.stringify(newPlaylist) !== JSON.stringify(playlist)) {
       playlist = newPlaylist;
       current = 0;
       playVideo(current);
     }
-  }, 30000);
+  }, 10000);
+
+  playVideo(current);
 </script>
 
 </body>
 </html>
-document.body.addEventListener("click", () => {
-  v.muted = false;
-  v.play().catch(()=>{});
-}, { once: true });
