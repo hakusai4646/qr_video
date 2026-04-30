@@ -14,58 +14,34 @@
       width: 100%;
       height: 100%;
       object-fit: contain;
+      display: block;
       background: #000;
-    }
-    #debug {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      color: #0f0;
-      font-size: 12px;
-      background: rgba(0,0,0,0.7);
-      padding: 5px;
     }
   </style>
 </head>
 <body>
 
 <video id="video" autoplay muted playsinline webkit-playsinline preload="auto"></video>
-<div id="debug"></div>
 
 <script>
   const v = document.getElementById("video");
-  const debug = document.getElementById("debug");
 
   const playlist = [
     "https://res.cloudinary.com/dl06u7sqw/video/upload/SP03_3_ahu6ts.mp4",
-    "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_01_ot7sge.mp4",
-    "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_02_xfnuu8.mp4",
-    "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_03_vqukvf.mp4",
-    "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_04_iptt9e.mp4"
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_01_qgxbpb.mp4",
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_02_akzgyu.mp4",
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_03_ivwxwe.mp4",
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_04_b5xlj1.mp4"
   ];
 
   let current = 0;
   let soundOn = false;
 
-  function log(msg) {
-    debug.innerText = msg;
-    console.log(msg);
-  }
-
   function playVideo(i) {
-    const url = playlist[i];
-    log("再生中: " + url);
-
-    v.src = url;
+    v.src = playlist[i];
     v.load();
     v.muted = !soundOn;
-
-    v.play().then(()=>{
-      log("再生成功: " + url);
-    }).catch(err=>{
-      log("再生失敗: " + url);
-      nextVideo();
-    });
+    v.play().catch(() => nextVideo());
   }
 
   function nextVideo() {
@@ -73,6 +49,7 @@
     playVideo(current);
   }
 
+  // タップで音ON（以降ずっと音あり）
   function enableSound() {
     soundOn = true;
     v.muted = false;
@@ -80,18 +57,11 @@
     v.play().catch(()=>{});
   }
 
-  document.body.addEventListener("click", enableSound, { once: true });
   document.body.addEventListener("touchstart", enableSound, { once: true });
+  document.body.addEventListener("click", enableSound, { once: true });
 
-  v.addEventListener("ended", () => {
-    log("終了 → 次へ");
-    nextVideo();
-  });
-
-  v.addEventListener("error", () => {
-    log("エラー発生 → 次へ");
-    nextVideo();
-  });
+  v.addEventListener("ended", nextVideo);
+  v.addEventListener("error", nextVideo);
 
   playVideo(current);
 </script>
