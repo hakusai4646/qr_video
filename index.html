@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     html, body {
       margin: 0;
       padding: 0;
       background: #000;
       height: 100%;
+      overflow: hidden;
     }
     video {
       width: 100%;
@@ -37,33 +38,29 @@
   let current = 0;
   let soundOn = false;
 
-  function playVideo(i) {
-    v.src = playlist[i];
+  function playVideo() {
+    v.src = playlist[current];
     v.load();
     v.muted = !soundOn;
-    v.play().catch(() => nextVideo());
+    v.play().catch(() => {});
   }
 
-  function nextVideo() {
-    current = (current + 1) % playlist.length;
-    playVideo(current);
-  }
-
-  // タップで音ON（以降ずっと音あり）
   function enableSound() {
     soundOn = true;
     v.muted = false;
     v.volume = 1.0;
-    v.play().catch(()=>{});
+    v.play().catch(() => {});
   }
 
   document.body.addEventListener("touchstart", enableSound, { once: true });
   document.body.addEventListener("click", enableSound, { once: true });
 
-  v.addEventListener("ended", nextVideo);
-  v.addEventListener("error", nextVideo);
+  v.addEventListener("ended", () => {
+    current = (current + 1) % playlist.length;
+    playVideo();
+  });
 
-  playVideo(current);
+  playVideo();
 </script>
 
 </body>
