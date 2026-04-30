@@ -14,17 +14,27 @@
       width: 100%;
       height: 100%;
       object-fit: contain;
-      display: block;
       background: #000;
+    }
+    #debug {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      color: #0f0;
+      font-size: 12px;
+      background: rgba(0,0,0,0.7);
+      padding: 5px;
     }
   </style>
 </head>
 <body>
 
 <video id="video" autoplay muted playsinline webkit-playsinline preload="auto"></video>
+<div id="debug"></div>
 
 <script>
   const v = document.getElementById("video");
+  const debug = document.getElementById("debug");
 
   const playlist = [
     "https://res.cloudinary.com/dl06u7sqw/video/upload/SP03_3_ahu6ts.mp4",
@@ -37,11 +47,30 @@
   let current = 0;
   let soundOn = false;
 
+  function log(msg) {
+    debug.innerText = msg;
+    console.log(msg);
+  }
+
   function playVideo(i) {
-    v.src = playlist[i];
+    const url = playlist[i];
+    log("再生中: " + url);
+
+    v.src = url;
     v.load();
     v.muted = !soundOn;
-    v.play().catch(()=>{});
+
+    v.play().then(()=>{
+      log("再生成功: " + url);
+    }).catch(err=>{
+      log("再生失敗: " + url);
+      nextVideo();
+    });
+  }
+
+  function nextVideo() {
+    current = (current + 1) % playlist.length;
+    playVideo(current);
   }
 
   function enableSound() {
@@ -51,17 +80,17 @@
     v.play().catch(()=>{});
   }
 
-  document.body.addEventListener("touchstart", enableSound, { once: true });
   document.body.addEventListener("click", enableSound, { once: true });
+  document.body.addEventListener("touchstart", enableSound, { once: true });
 
   v.addEventListener("ended", () => {
-    current = (current + 1) % playlist.length;
-    playVideo(current);
+    log("終了 → 次へ");
+    nextVideo();
   });
 
   v.addEventListener("error", () => {
-    current = (current + 1) % playlist.length;
-    playVideo(current);
+    log("エラー発生 → 次へ");
+    nextVideo();
   });
 
   playVideo(current);
