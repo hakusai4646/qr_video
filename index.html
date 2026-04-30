@@ -14,44 +14,55 @@
       width: 100%;
       height: 100%;
       object-fit: contain;
+      display: block;
+      background: #000;
     }
   </style>
 </head>
 <body>
 
-<video id="video" autoplay muted playsinline></video>
+<video id="video" autoplay muted playsinline webkit-playsinline preload="auto"></video>
 
 <script>
   const v = document.getElementById("video");
 
-  // 公開開始：2026年5月1日 17:00（日本時間）
-  const startTime = new Date("2026-05-01T17:00:00+09:00");
-
-  // あとでファイル名・URLをここに追記
   const playlist = [
-    // "1つ目の動画ファイル名またはURL",
-    // "2つ目の動画ファイル名またはURL"
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/SP03_3_ahu6ts.mp4",
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/%E3%82%AB%E3%83%83%E3%82%B3%E3%82%A4%E3%82%A4_1_1_w1ouma.mp4",
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/%E3%82%AB%E3%83%83%E3%82%B3%E3%82%A4%E3%82%A4_2_1_zocz8w.mp4",
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/%E3%82%AB%E3%83%83%E3%82%B3%E3%82%A4%E3%82%A4_3_krf1nk.mp4",
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/%E3%82%AB%E3%83%83%E3%82%B3%E3%82%A4%E3%82%A4_4_hjsxcv.mp4"
   ];
 
-  const now = new Date();
+  let current = 0;
+  let soundOn = false;
 
-  if (now >= startTime && playlist.length > 0) {
-    let lastIndex = localStorage.getItem("lastVideoIndex");
-    lastIndex = lastIndex ? parseInt(lastIndex) : -1;
-
-    let nextIndex = (lastIndex + 1) % playlist.length;
-    localStorage.setItem("lastVideoIndex", nextIndex);
-
-    v.src = playlist[nextIndex];
-    v.play();
-
-    v.addEventListener("ended", () => {
-      nextIndex = (nextIndex + 1) % playlist.length;
-      localStorage.setItem("lastVideoIndex", nextIndex);
-      v.src = playlist[nextIndex];
-      v.play();
-    });
+  function playVideo(i) {
+    v.src = playlist[i];
+    v.load();
+    v.muted = !soundOn;
+    v.play().catch(()=>{});
   }
+
+  // タップで音ON（以降ずっと音あり）
+  function enableSound() {
+    soundOn = true;
+    v.muted = false;
+    v.volume = 1.0;
+    v.play().catch(()=>{});
+  }
+
+  document.body.addEventListener("touchstart", enableSound, { once: true });
+  document.body.addEventListener("click", enableSound, { once: true });
+
+  // 終わったら次へ
+  v.addEventListener("ended", () => {
+    current = (current + 1) % playlist.length;
+    playVideo(current);
+  });
+
+  // 最初の動画
+  playVideo(current);
 </script>
 
 </body>
