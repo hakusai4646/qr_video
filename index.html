@@ -37,12 +37,30 @@
 
   let current = 0;
   let soundOn = false;
+  let changing = false;
 
   function playVideo() {
+    changing = false;
     v.src = playlist[current];
     v.load();
-    v.muted = !soundOn;
+
+    if (soundOn) {
+      v.muted = false;
+      v.volume = 1.0;
+    }
+
     v.play().catch(() => {});
+  }
+
+  function nextVideo() {
+    if (changing) return;
+    changing = true;
+
+    current = (current + 1) % playlist.length;
+
+    setTimeout(() => {
+      playVideo();
+    }, 300);
   }
 
   function enableSound() {
@@ -55,10 +73,17 @@
   document.body.addEventListener("touchstart", enableSound, { once: true });
   document.body.addEventListener("click", enableSound, { once: true });
 
-  v.addEventListener("ended", () => {
-    current = (current + 1) % playlist.length;
-    playVideo();
+  v.addEventListener("ended", nextVideo);
+
+  v.addEventListener("timeupdate", () => {
+    if (!isNaN(v.duration) && v.duration > 0) {
+      if (v.currentTime >= v.duration - 0.3) {
+        nextVideo();
+      }
+    }
   });
+
+  v.addEventListener("error", nextVideo);
 
   playVideo();
 </script>
