@@ -10,6 +10,11 @@
       background: #000;
       height: 100%;
       overflow: hidden;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: sans-serif;
     }
     video {
       width: 100%;
@@ -18,14 +23,32 @@
       display: block;
       background: #000;
     }
+    #message {
+      position: absolute;
+      font-size: 22px;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
 
 <video id="video" autoplay muted playsinline webkit-playsinline preload="auto"></video>
 
+<div id="message" style="display:none;">
+  この動画は公開終了しました
+</div>
+
 <script>
   const v = document.getElementById("video");
+  const msg = document.getElementById("message");
+
+  // ★ 日本時間で固定（JST = UTC+9）
+  const deadline = new Date(Date.UTC(2026, 4, 31, 14, 59, 0));
+  // ↑ 2026/05/31 23:59 JST = 14:59 UTC
+
+  function isExpired() {
+    return new Date() >= deadline;
+  }
 
   const playlist = [
     "https://res.cloudinary.com/dl06u7sqw/video/upload/comment_tackki.mp4",
@@ -41,6 +64,13 @@
   let changing = false;
 
   function playVideo() {
+    if (isExpired()) {
+      v.pause();
+      v.style.display = "none";
+      msg.style.display = "block";
+      return;
+    }
+
     changing = false;
     v.src = playlist[current];
     v.load();
@@ -54,9 +84,9 @@
   }
 
   function nextVideo() {
-    if (changing) return;
-    changing = true;
+    if (changing || isExpired()) return;
 
+    changing = true;
     current = (current + 1) % playlist.length;
 
     setTimeout(() => {
@@ -65,6 +95,8 @@
   }
 
   function enableSound() {
+    if (isExpired()) return;
+
     soundOn = true;
     v.muted = false;
     v.volume = 1.0;
@@ -77,6 +109,11 @@
   v.addEventListener("ended", nextVideo);
 
   v.addEventListener("timeupdate", () => {
+    if (isExpired()) {
+      playVideo();
+      return;
+    }
+
     if (!isNaN(v.duration) && v.duration > 0) {
       if (v.currentTime >= v.duration - 0.3) {
         nextVideo();
@@ -86,7 +123,13 @@
 
   v.addEventListener("error", nextVideo);
 
-  playVideo();
+  // 初回チェック
+  if (isExpired()) {
+    v.style.display = "none";
+    msg.style.display = "block";
+  } else {
+    playVideo();
+  }
 </script>
 
 </body>
