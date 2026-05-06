@@ -19,14 +19,33 @@
       display: block;
       background: #000;
     }
+
+    #tiktokButton {
+      display: none;
+      position: fixed;
+      left: 50%;
+      bottom: 40px;
+      transform: translateX(-50%);
+      padding: 16px 28px;
+      font-size: 18px;
+      border: none;
+      border-radius: 999px;
+      background: white;
+      color: black;
+      font-weight: bold;
+      z-index: 10;
+    }
   </style>
 </head>
 <body>
 
 <video id="video" autoplay muted playsinline webkit-playsinline preload="auto"></video>
 
+<button id="tiktokButton">TikTokも見てね</button>
+
 <script>
   const v = document.getElementById("video");
+  const tiktokButton = document.getElementById("tiktokButton");
 
   const playlist = [
     "https://res.cloudinary.com/dl06u7sqw/video/upload/comment_tackki.mp4",
@@ -39,19 +58,11 @@
 
   const tiktokUrl = "https://www.tiktok.com/@shibu_yuu/video/7512383236824141077";
 
-  // リロードごとに次の動画へ
-  let current = localStorage.getItem("currentVideo");
-  current = current ? parseInt(current) : 0;
-
-  localStorage.setItem(
-    "currentVideo",
-    (current + 1) % playlist.length
-  );
-
+  let current = 0;
   let soundOn = false;
-  let redirected = false;
 
   function playVideo() {
+    tiktokButton.style.display = "none";
     v.src = playlist[current];
     v.load();
 
@@ -70,34 +81,21 @@
     v.play().catch(() => {});
   }
 
-  function goTikTok() {
-    if (redirected) return;
-    redirected = true;
-    window.location.href = tiktokUrl;
-  }
-
   document.body.addEventListener("touchstart", enableSound, { once: true });
   document.body.addEventListener("click", enableSound, { once: true });
 
-  // 最後の動画だけTikTokへ
   v.addEventListener("ended", () => {
-    if (current === playlist.length - 1) {
-      goTikTok();
+    if (current >= playlist.length - 1) {
+      tiktokButton.style.display = "block";
+      return;
     }
+
+    current++;
+    playVideo();
   });
 
-  // endedが効かない端末対策
-  v.addEventListener("timeupdate", () => {
-
-    if (current === playlist.length - 1) {
-
-      if (!isNaN(v.duration) && v.duration > 0) {
-
-        if (v.currentTime >= v.duration - 0.5) {
-          goTikTok();
-        }
-      }
-    }
+  tiktokButton.addEventListener("click", () => {
+    window.location.href = tiktokUrl;
   });
 
   playVideo();
