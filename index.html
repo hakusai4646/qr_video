@@ -1,60 +1,103 @@
 <!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Video Play</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <title>Movie Player</title>
+
   <style>
-    body {
+    * {
       margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
       background: #000;
-      color: #fff;
-      font-family: system-ui, sans-serif;
-      display: grid;
-      place-items: center;
-      min-height: 100vh;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      font-family: sans-serif;
     }
-    .wrap {
+
+    .container {
       width: 100%;
-      max-width: 720px;
-      text-align: center;
+      height: 100%;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
+
     video {
       width: 100%;
-      max-height: 80vh;
+      height: 100%;
+      object-fit: contain;
       background: #000;
     }
-    button, a {
-      display: inline-block;
-      margin-top: 20px;
-      padding: 14px 22px;
-      border-radius: 999px;
+
+    #tiktokBtn {
+      display: none;
+
+      position: absolute;
+      z-index: 10;
+
+      padding: 16px 28px;
+      border-radius: 9999px;
+
       background: #ff0050;
       color: #fff;
+
       text-decoration: none;
-      border: 0;
-      font-size: 16px;
-      font-weight: 700;
-    }
-    #tiktok {
-      display: none;
+      font-size: 18px;
+      font-weight: bold;
     }
   </style>
 </head>
-<body>
-  <div class="wrap">
-    <video id="video" controls autoplay playsinline></video>
 
-    <a id="tiktok"
-       href="https://www.tiktok.com/@shibu_yuu/video/7512383236824141077"
-       target="_blank"
-       rel="noopener">
+<body>
+
+  <div class="container">
+
+    <video
+      id="videoPlayer"
+      autoplay
+      controls
+      playsinline
+      webkit-playsinline
+    ></video>
+
+    <a
+      id="tiktokBtn"
+      href="https://www.tiktok.com/@shibu_yuu/video/7512383236824141077"
+      target="_blank"
+      rel="noopener"
+    >
       TikTokも見てね
     </a>
+
   </div>
 
   <script>
-    const cloudName = "YOUR_CLOUD_NAME"; // ← ここだけ変更
+    /*
+      ============================
+      Cloudinary設定
+      ============================
+    */
+
+    const cloudName = "YOUR_CLOUD_NAME";
+
+    /*
+      ============================
+      動画リスト
+      ============================
+    */
 
     const videos = [
       "comment_tackki",
@@ -65,24 +108,97 @@
       "kakko_04_b5xlj1"
     ];
 
-    const videoEl = document.getElementById("video");
-    const tiktokEl = document.getElementById("tiktok");
+    /*
+      ============================
+      要素取得
+      ============================
+    */
 
-    const key = "currentVideoIndex";
-    let index = Number(localStorage.getItem(key) || 0);
+    const videoPlayer = document.getElementById("videoPlayer");
+    const tiktokBtn = document.getElementById("tiktokBtn");
 
-    if (index >= videos.length) {
-      videoEl.style.display = "none";
-      tiktokEl.style.display = "inline-block";
-      localStorage.removeItem(key);
-    } else {
+    /*
+      ============================
+      保存キー
+      ============================
+    */
+
+    const STORAGE_KEY = "currentVideoIndex";
+
+    /*
+      ============================
+      index取得
+      ============================
+    */
+
+    let currentIndex = Number(localStorage.getItem(STORAGE_KEY));
+
+    if (
+      !Number.isInteger(currentIndex) ||
+      currentIndex < 0
+    ) {
+      currentIndex = 0;
+    }
+
+    /*
+      ============================
+      動画読み込み
+      ============================
+    */
+
+    function loadVideo(index) {
+
+      // 最後まで行った
+      if (index >= videos.length) {
+
+        videoPlayer.style.display = "none";
+
+        tiktokBtn.style.display = "inline-block";
+
+        localStorage.removeItem(STORAGE_KEY);
+
+        return;
+      }
+
       const publicId = videos[index];
 
-      videoEl.src =
+      const videoUrl =
         `https://res.cloudinary.com/${cloudName}/video/upload/${publicId}.mp4`;
 
-      localStorage.setItem(key, index + 1);
+      videoPlayer.src = videoUrl;
+
+      videoPlayer.load();
+
+      videoPlayer.play().catch(() => {});
     }
+
+    /*
+      ============================
+      初回ロード
+      ============================
+    */
+
+    loadVideo(currentIndex);
+
+    /*
+      ============================
+      再生終了時
+      ============================
+    */
+
+    videoPlayer.addEventListener("ended", () => {
+
+      currentIndex++;
+
+      localStorage.setItem(
+        STORAGE_KEY,
+        String(currentIndex)
+      );
+
+      loadVideo(currentIndex);
+    });
+
   </script>
+
 </body>
 </html>
