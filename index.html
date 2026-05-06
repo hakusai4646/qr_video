@@ -36,7 +36,8 @@
     "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_04_b5xlj1.mp4"
   ];
 
-  // リロードごとに次の動画へ
+  const tiktokUrl = "https://vt.tiktok.com/ZS9bRTAXU/";
+
   let current = localStorage.getItem("currentVideo");
   current = current ? parseInt(current) : 0;
 
@@ -66,8 +67,26 @@
     v.play().catch(() => {});
   }
 
+  function goTikTok() {
+    window.location.href = tiktokUrl;
+  }
+
   document.body.addEventListener("touchstart", enableSound, { once: true });
   document.body.addEventListener("click", enableSound, { once: true });
+
+  v.addEventListener("ended", () => {
+    if (current === playlist.length - 1) {
+      goTikTok();
+    }
+  });
+
+  v.addEventListener("timeupdate", () => {
+    if (current === playlist.length - 1 && v.duration > 0) {
+      if (v.currentTime >= v.duration - 0.5) {
+        goTikTok();
+      }
+    }
+  });
 
   playVideo();
 </script>
