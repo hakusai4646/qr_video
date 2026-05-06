@@ -3,12 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <style>
-    html, body {
+    html,
+    body {
       margin: 0;
       padding: 0;
-      background: #000;
+      width: 100%;
       height: 100%;
+      background: #000;
       overflow: hidden;
     }
 
@@ -22,28 +25,44 @@
 
     #tiktokButton {
       display: none;
+
       position: fixed;
       left: 50%;
       bottom: 40px;
       transform: translateX(-50%);
+
       padding: 16px 28px;
+
       background: #ff0050;
       color: #fff;
+
       font-size: 18px;
       font-weight: bold;
       text-decoration: none;
+
       border-radius: 999px;
-      z-index: 10;
+
+      z-index: 100;
     }
   </style>
 </head>
+
 <body>
 
-<video id="video" autoplay muted playsinline webkit-playsinline preload="auto"></video>
+<video
+  id="video"
+  autoplay
+  muted
+  playsinline
+  webkit-playsinline
+  preload="auto"
+></video>
 
 <a
   id="tiktokButton"
   href="https://www.tiktok.com/@shibu_yuu/video/7512383236824141077"
+  target="_blank"
+  rel="noopener"
 >
   TikTokも見てね
 </a>
@@ -61,63 +80,174 @@
     "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_04_b5xlj1.mp4"
   ];
 
-  let current = localStorage.getItem("currentVideo");
-  current = current ? parseInt(current) : 0;
+  /*
+    現在の動画番号
+  */
+
+  let current =
+    parseInt(localStorage.getItem("currentVideo") || "0", 10);
+
+  /*
+    音ON状態保持
+  */
+
+  let soundOn =
+    localStorage.getItem("soundOn") === "true";
+
+  /*
+    念のため補正
+  */
 
   if (current >= playlist.length) {
     current = 0;
+    localStorage.setItem("currentVideo", "0");
   }
 
-  localStorage.setItem(
-    "currentVideo",
-    (current + 1) % playlist.length
-  );
-
-  let soundOn = false;
+  /*
+    動画再生
+  */
 
   function playVideo() {
+
     v.src = playlist[current];
-    v.load();
 
     if (soundOn) {
       v.muted = false;
       v.volume = 1.0;
+    } else {
+      v.muted = true;
     }
 
-    v.play().catch(() => {});
+    v.load();
+
+    v.play().catch(() => {
+
+      /*
+        音あり失敗時は
+        mutedで再試行
+      */
+
+      v.muted = true;
+
+      v.play().catch(() => {});
+    });
   }
+
+  /*
+    タップ後音ON
+  */
 
   function enableSound() {
+
     soundOn = true;
+
+    localStorage.setItem(
+      "soundOn",
+      "true"
+    );
+
     v.muted = false;
     v.volume = 1.0;
+
     v.play().catch(() => {});
   }
 
+  /*
+    TikTokボタン表示
+  */
+
   function showTikTokButton() {
+
+    v.style.display = "none";
+
     tiktokButton.style.display = "block";
   }
 
-  document.body.addEventListener("touchstart", enableSound, { once: true });
-  document.body.addEventListener("click", enableSound, { once: true });
+  /*
+    初回タップで音ON
+  */
+
+  document.body.addEventListener(
+    "touchstart",
+    enableSound,
+    { once: true }
+  );
+
+  document.body.addEventListener(
+    "click",
+    enableSound,
+    { once: true }
+  );
+
+  /*
+    動画終了
+  */
 
   v.addEventListener("ended", () => {
+
+    /*
+      最後の動画
+    */
+
     if (current === playlist.length - 1) {
+
+      localStorage.setItem(
+        "currentVideo",
+        "0"
+      );
+
       showTikTokButton();
+
+      return;
     }
+
+    /*
+      次の動画へ
+    */
+
+    localStorage.setItem(
+      "currentVideo",
+      String(current + 1)
+    );
+
+    location.reload();
   });
 
+  /*
+    ended対策
+  */
+
   v.addEventListener("timeupdate", () => {
+
     if (current === playlist.length - 1) {
-      if (!isNaN(v.duration) && v.duration > 0) {
-        if (v.currentTime >= v.duration - 0.5) {
+
+      if (
+        !isNaN(v.duration) &&
+        v.duration > 0
+      ) {
+
+        if (
+          v.currentTime >=
+          v.duration - 0.5
+        ) {
+
+          localStorage.setItem(
+            "currentVideo",
+            "0"
+          );
+
           showTikTokButton();
         }
       }
     }
   });
 
+  /*
+    再生開始
+  */
+
   playVideo();
+
 </script>
 
 </body>
