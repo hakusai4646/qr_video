@@ -10,6 +10,7 @@
       background: #000;
       height: 100%;
       overflow: hidden;
+      font-family: sans-serif;
     }
 
     video {
@@ -19,14 +20,53 @@
       display: block;
       background: #000;
     }
+
+    #nextPage {
+      display: none;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      color: #fff;
+      text-align: center;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+
+    #nextPage h1 {
+      font-size: 26px;
+      margin-bottom: 24px;
+    }
+
+    #tiktokBtn {
+      display: inline-block;
+      padding: 16px 28px;
+      background: #fff;
+      color: #000;
+      text-decoration: none;
+      border-radius: 999px;
+      font-weight: bold;
+      font-size: 18px;
+    }
   </style>
 </head>
 <body>
 
 <video id="video" autoplay muted playsinline webkit-playsinline preload="auto"></video>
 
+<div id="nextPage">
+  <h1>TikTokも見てね</h1>
+  <a
+    id="tiktokBtn"
+    href="https://www.tiktok.com/@shibu_yuu/video/7512383236824141077?is_from_webapp=1&sender_device=pc&web_id=7274534222295090690"
+  >
+    TikTokを見る
+  </a>
+</div>
+
 <script>
   const v = document.getElementById("video");
+  const nextPage = document.getElementById("nextPage");
 
   const playlist = [
     "https://res.cloudinary.com/dl06u7sqw/video/upload/comment_tackki.mp4",
@@ -37,19 +77,17 @@
     "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_04_b5xlj1.mp4"
   ];
 
-  const tiktokUrl = "https://www.tiktok.com/@shibu_yuu/video/7512383236824141077";
+  let current = localStorage.getItem("currentVideo");
+  current = current ? parseInt(current, 10) : 0;
 
   // リロードごとに次の動画へ
-  let current = localStorage.getItem("currentVideo");
-  current = current ? parseInt(current) : 0;
-
   localStorage.setItem(
     "currentVideo",
     (current + 1) % playlist.length
   );
 
   let soundOn = false;
-  let redirected = false;
+  let finished = false;
 
   function playVideo() {
     v.src = playlist[current];
@@ -70,31 +108,31 @@
     v.play().catch(() => {});
   }
 
-  function goTikTok() {
-    if (redirected) return;
-    redirected = true;
-    window.location.href = tiktokUrl;
+  function showNextPage() {
+    if (finished) return;
+    finished = true;
+
+    v.pause();
+    v.style.display = "none";
+    nextPage.style.display = "flex";
   }
 
   document.body.addEventListener("touchstart", enableSound, { once: true });
   document.body.addEventListener("click", enableSound, { once: true });
 
-  // 最後の動画だけTikTokへ
+  // 最後の動画が終わったら次ページ風の画面へ
   v.addEventListener("ended", () => {
     if (current === playlist.length - 1) {
-      goTikTok();
+      showNextPage();
     }
   });
 
   // endedが効かない端末対策
   v.addEventListener("timeupdate", () => {
-
     if (current === playlist.length - 1) {
-
       if (!isNaN(v.duration) && v.duration > 0) {
-
         if (v.currentTime >= v.duration - 0.5) {
-          goTikTok();
+          showNextPage();
         }
       }
     }
