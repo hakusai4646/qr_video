@@ -1,105 +1,88 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Video Play</title>
   <style>
-    html, body {
+    body {
       margin: 0;
-      padding: 0;
       background: #000;
-      height: 100%;
-      overflow: hidden;
+      color: #fff;
+      font-family: system-ui, sans-serif;
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
     }
-
+    .wrap {
+      width: 100%;
+      max-width: 720px;
+      text-align: center;
+    }
     video {
       width: 100%;
-      height: 100%;
-      object-fit: contain;
-      display: block;
+      max-height: 80vh;
       background: #000;
     }
-
-    #tiktokButton {
-      display: none;
-      position: fixed;
-      left: 50%;
-      bottom: 40px;
-      transform: translateX(-50%);
-      padding: 16px 28px;
-      font-size: 18px;
-      border: none;
+    button, a {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 14px 22px;
       border-radius: 999px;
-      background: white;
-      color: black;
-      font-weight: bold;
-      z-index: 10;
+      background: #ff0050;
+      color: #fff;
+      text-decoration: none;
+      border: 0;
+      font-size: 16px;
+      font-weight: 700;
+    }
+    #tiktok {
+      display: none;
     }
   </style>
 </head>
 <body>
+  <div class="wrap">
+    <video id="video" controls autoplay playsinline></video>
 
-<video id="video" autoplay muted playsinline webkit-playsinline preload="auto"></video>
+    <a id="tiktok"
+       href="https://www.tiktok.com/@shibu_yuu/video/7512383236824141077"
+       target="_blank"
+       rel="noopener">
+      TikTokも見てね
+    </a>
+  </div>
 
-<button id="tiktokButton">TikTokも見てね</button>
+  <script>
+    const cloudName = "YOUR_CLOUD_NAME"; // ← ここだけ変更
 
-<script>
-  const v = document.getElementById("video");
-  const tiktokButton = document.getElementById("tiktokButton");
+    const videos = [
+      "comment_tackki",
+      "SP03_hwjq9u",
+      "kakko_01_qgxbpb",
+      "kakko_02_akzgyu",
+      "kakko_03_ivwxwe",
+      "kakko_04_b5xlj1"
+    ];
 
-  const playlist = [
-    "https://res.cloudinary.com/dl06u7sqw/video/upload/comment_tackki.mp4",
-    "https://res.cloudinary.com/dl06u7sqw/video/upload/SP03_hwjq9u.mp4",
-    "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_01_qgxbpb.mp4",
-    "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_02_akzgyu.mp4",
-    "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_03_ivwxwe.mp4",
-    "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_04_b5xlj1.mp4"
-  ];
+    const videoEl = document.getElementById("video");
+    const tiktokEl = document.getElementById("tiktok");
 
-  const tiktokUrl = "https://www.tiktok.com/@shibu_yuu/video/7512383236824141077";
+    const key = "currentVideoIndex";
+    let index = Number(localStorage.getItem(key) || 0);
 
-  let current = 0;
-  let soundOn = false;
+    if (index >= videos.length) {
+      videoEl.style.display = "none";
+      tiktokEl.style.display = "inline-block";
+      localStorage.removeItem(key);
+    } else {
+      const publicId = videos[index];
 
-  function playVideo() {
-    tiktokButton.style.display = "none";
-    v.src = playlist[current];
-    v.load();
+      videoEl.src =
+        `https://res.cloudinary.com/${cloudName}/video/upload/${publicId}.mp4`;
 
-    if (soundOn) {
-      v.muted = false;
-      v.volume = 1.0;
+      localStorage.setItem(key, index + 1);
     }
-
-    v.play().catch(() => {});
-  }
-
-  function enableSound() {
-    soundOn = true;
-    v.muted = false;
-    v.volume = 1.0;
-    v.play().catch(() => {});
-  }
-
-  document.body.addEventListener("touchstart", enableSound, { once: true });
-  document.body.addEventListener("click", enableSound, { once: true });
-
-  v.addEventListener("ended", () => {
-    if (current >= playlist.length - 1) {
-      tiktokButton.style.display = "block";
-      return;
-    }
-
-    current++;
-    playVideo();
-  });
-
-  tiktokButton.addEventListener("click", () => {
-    window.location.href = tiktokUrl;
-  });
-
-  playVideo();
-</script>
-
+  </script>
 </body>
 </html>
