@@ -11,6 +11,7 @@
       height: 100%;
       overflow: hidden;
     }
+
     video {
       width: 100%;
       height: 100%;
@@ -36,8 +37,9 @@
     "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_04_b5xlj1.mp4"
   ];
 
-  const tiktokUrl = "https://vt.tiktok.com/ZS9bRTAXU/";
+  const tiktokUrl = "https://www.tiktok.com/@shibu_yuu/video/7512383236824141077";
 
+  // リロードごとに次の動画へ
   let current = localStorage.getItem("currentVideo");
   current = current ? parseInt(current) : 0;
 
@@ -47,6 +49,7 @@
   );
 
   let soundOn = false;
+  let redirected = false;
 
   function playVideo() {
     v.src = playlist[current];
@@ -68,22 +71,31 @@
   }
 
   function goTikTok() {
+    if (redirected) return;
+    redirected = true;
     window.location.href = tiktokUrl;
   }
 
   document.body.addEventListener("touchstart", enableSound, { once: true });
   document.body.addEventListener("click", enableSound, { once: true });
 
+  // 最後の動画だけTikTokへ
   v.addEventListener("ended", () => {
     if (current === playlist.length - 1) {
       goTikTok();
     }
   });
 
+  // endedが効かない端末対策
   v.addEventListener("timeupdate", () => {
-    if (current === playlist.length - 1 && v.duration > 0) {
-      if (v.currentTime >= v.duration - 0.5) {
-        goTikTok();
+
+    if (current === playlist.length - 1) {
+
+      if (!isNaN(v.duration) && v.duration > 0) {
+
+        if (v.currentTime >= v.duration - 0.5) {
+          goTikTok();
+        }
       }
     }
   });
