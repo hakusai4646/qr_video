@@ -36,7 +36,6 @@
     "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_04_b5xlj1.mp4"
   ];
 
-  // TikTokへ飛ばすURL
   const tiktokUrl = "https://vt.tiktok.com/ZS9bRTAXU/";
 
   let current = 0;
@@ -65,16 +64,12 @@
   document.body.addEventListener("click", enableSound, { once: true });
 
   v.addEventListener("ended", () => {
-
-    // 最後の動画ならTikTokへ移動
-    if (current >= playlist.length - 1) {
+    if (current === playlist.length - 1) {
       window.location.href = tiktokUrl;
-      return;
+    } else {
+      current++;
+      playVideo();
     }
-
-    // 次の動画へ
-    current++;
-    playVideo();
   });
 
   playVideo();
