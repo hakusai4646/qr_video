@@ -1,1 +1,107 @@
-<!DOCTYPE html> <html lang="ja"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <style> html, body { margin: 0; padding: 0; background: #000; height: 100%; overflow: hidden; } video { width: 100%; height: 100%; object-fit: contain; display: block; background: #000; } </style> </head> <body> <video id="video" autoplay muted playsinline webkit-playsinline preload="auto"></video> <script> const v = document.getElementById("video"); const playlist = [ "https://res.cloudinary.com/dl06u7sqw/video/upload/comment_tackki.mp4", "https://res.cloudinary.com/dl06u7sqw/video/upload/SP03_hwjq9u.mp4", "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_01_qgxbpb.mp4", "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_02_akzgyu.mp4", "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_03_ivwxwe.mp4", "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_04_b5xlj1.mp4" ]; const tiktokUrl = "https://www.tiktok.com/@shibu_yuu/video/7512383236824141077"; // リロードごとに次の動画へ let current = localStorage.getItem("currentVideo"); current = current ? parseInt(current) : 0; localStorage.setItem( "currentVideo", (current + 1) % playlist.length ); let soundOn = false; let redirected = false; function playVideo() { v.src = playlist[current]; v.load(); if (soundOn) { v.muted = false; v.volume = 1.0; } v.play().catch(() => {}); } function enableSound() { soundOn = true; v.muted = false; v.volume = 1.0; v.play().catch(() => {}); } function goTikTok() { if (redirected) return; redirected = true; window.location.href = tiktokUrl; } document.body.addEventListener("touchstart", enableSound, { once: true }); document.body.addEventListener("click", enableSound, { once: true }); // 最後の動画だけTikTokへ v.addEventListener("ended", () => { if (current === playlist.length - 1) { goTikTok(); } }); // endedが効かない端末対策 v.addEventListener("timeupdate", () => { if (current === playlist.length - 1) { if (!isNaN(v.duration) && v.duration > 0) { if (v.currentTime >= v.duration - 0.5) { goTikTok(); } } } }); playVideo(); </script> </body> </html>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #000;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      background: #000;
+    }
+  </style>
+</head>
+<body>
+
+<video id="video" autoplay muted playsinline webkit-playsinline preload="auto"></video>
+
+<script>
+  const v = document.getElementById("video");
+
+  const playlist = [
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/comment_tackki.mp4",
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/SP03_hwjq9u.mp4",
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_01_qgxbpb.mp4",
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_02_akzgyu.mp4",
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_03_ivwxwe.mp4",
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_04_b5xlj1.mp4"
+  ];
+
+  const tiktokUrl = "https://www.tiktok.com/@shibu_yuu/video/7512383236824141077";
+
+  // リロードごとに次の動画へ
+  let current = localStorage.getItem("currentVideo");
+  current = current ? parseInt(current) : 0;
+
+  localStorage.setItem(
+    "currentVideo",
+    (current + 1) % playlist.length
+  );
+
+  let soundOn = false;
+  let redirected = false;
+
+  function playVideo() {
+    v.src = playlist[current];
+    v.load();
+
+    if (soundOn) {
+      v.muted = false;
+      v.volume = 1.0;
+    }
+
+    v.play().catch(() => {});
+  }
+
+  function enableSound() {
+    soundOn = true;
+    v.muted = false;
+    v.volume = 1.0;
+    v.play().catch(() => {});
+  }
+
+  function goTikTok() {
+    if (redirected) return;
+    redirected = true;
+    window.location.href = tiktokUrl;
+  }
+
+  document.body.addEventListener("touchstart", enableSound, { once: true });
+  document.body.addEventListener("click", enableSound, { once: true });
+
+  // 最後の動画だけTikTokへ
+  v.addEventListener("ended", () => {
+    if (current === playlist.length - 1) {
+      goTikTok();
+    }
+  });
+
+  // endedが効かない端末対策
+  v.addEventListener("timeupdate", () => {
+
+    if (current === playlist.length - 1) {
+
+      if (!isNaN(v.duration) && v.duration > 0) {
+
+        if (v.currentTime >= v.duration - 0.5) {
+          goTikTok();
+        }
+      }
+    }
+  });
+
+  playVideo();
+</script>
+
+</body>
+</html>
