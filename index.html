@@ -1,89 +1,107 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
-  <title>Movie Player</title>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    *{
-      margin:0;
-      padding:0;
-      box-sizing:border-box;
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #000;
+      height: 100%;
+      overflow: hidden;
     }
 
-    body{
-      width:100vw;
-      height:100vh;
-      background:#000;
-      overflow:hidden;
-
-      display:flex;
-      justify-content:center;
-      align-items:center;
-    }
-
-    video{
-      width:100%;
-      height:100%;
-      object-fit:contain;
-      background:#000;
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      background: #000;
     }
   </style>
 </head>
-
 <body>
 
-  <video
-    id="video"
-    autoplay
-    controls
-    playsinline
-    webkit-playsinline
-  ></video>
+<video id="video" autoplay muted playsinline webkit-playsinline preload="auto"></video>
 
-  <script>
-    /*
-      まずこれで復旧する
-      Cloudinary名だけ入れる
-    */
+<script>
+  const v = document.getElementById("video");
 
-    const cloudName = "YOUR_CLOUD_NAME";
+  const playlist = [
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/comment_tackki.mp4",
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/SP03_hwjq9u.mp4",
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_01_qgxbpb.mp4",
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_02_akzgyu.mp4",
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_03_ivwxwe.mp4",
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_04_b5xlj1.mp4"
+  ];
 
-    /*
-      ここは今まで通り
-    */
+  const tiktokUrl = "https://www.tiktok.com/@shibu_yuu/video/7512383236824141077";
 
-    const videos = [
-      "comment_tackki",
-      "SP03_hwjq9u",
-      "kakko_01_qgxbpb",
-      "kakko_02_akzgyu",
-      "kakko_03_ivwxwe",
-      "kakko_04_b5xlj1"
-    ];
+  // リロードごとに次の動画へ
+  let current = localStorage.getItem("currentVideo");
+  current = current ? parseInt(current) : 0;
 
-    /*
-      localStorage完全停止
-      まず動画再生だけ戻す
-    */
+  localStorage.setItem(
+    "currentVideo",
+    (current + 1) % playlist.length
+  );
 
-    const video = document.getElementById("video");
+  let soundOn = false;
+  let redirected = false;
 
-    /*
-      まず1本目固定
-    */
+  function playVideo() {
+    v.src = playlist[current];
+    v.load();
 
-    const firstVideo = videos[0];
+    if (soundOn) {
+      v.muted = false;
+      v.volume = 1.0;
+    }
 
-    video.src =
-      `https://res.cloudinary.com/${cloudName}/video/upload/${firstVideo}.mp4`;
+    v.play().catch(() => {});
+  }
 
-    video.load();
+  function enableSound() {
+    soundOn = true;
+    v.muted = false;
+    v.volume = 1.0;
+    v.play().catch(() => {});
+  }
 
-    video.play().catch(() => {});
-  </script>
+  function goTikTok() {
+    if (redirected) return;
+    redirected = true;
+    window.location.href = tiktokUrl;
+  }
+
+  document.body.addEventListener("touchstart", enableSound, { once: true });
+  document.body.addEventListener("click", enableSound, { once: true });
+
+  // 最後の動画だけTikTokへ
+  v.addEventListener("ended", () => {
+    if (current === playlist.length - 1) {
+      goTikTok();
+    }
+  });
+
+  // endedが効かない端末対策
+  v.addEventListener("timeupdate", () => {
+
+    if (current === playlist.length - 1) {
+
+      if (!isNaN(v.duration) && v.duration > 0) {
+
+        if (v.currentTime >= v.duration - 0.5) {
+          goTikTok();
+        }
+      }
+    }
+  });
+
+  playVideo();
+</script>
 
 </body>
 </html>
