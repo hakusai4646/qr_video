@@ -81,14 +81,17 @@
   ];
 
   /*
-    現在の動画番号
+    現在動画
   */
 
   let current =
-    parseInt(localStorage.getItem("currentVideo") || "0", 10);
+    parseInt(
+      localStorage.getItem("currentVideo") || "0",
+      10
+    );
 
   /*
-    音ON状態保持
+    音状態維持
   */
 
   let soundOn =
@@ -98,9 +101,12 @@
     念のため補正
   */
 
-  if (current >= playlist.length) {
+  if (
+    isNaN(current) ||
+    current < 0 ||
+    current >= playlist.length
+  ) {
     current = 0;
-    localStorage.setItem("currentVideo", "0");
   }
 
   /*
@@ -123,8 +129,7 @@
     v.play().catch(() => {
 
       /*
-        音あり失敗時は
-        mutedで再試行
+        音あり失敗時
       */
 
       v.muted = true;
@@ -134,7 +139,7 @@
   }
 
   /*
-    タップ後音ON
+    初回タップで音ON
   */
 
   function enableSound() {
@@ -158,13 +163,15 @@
 
   function showTikTokButton() {
 
+    v.pause();
+
     v.style.display = "none";
 
     tiktokButton.style.display = "block";
   }
 
   /*
-    初回タップで音ON
+    タップ時音ON
   */
 
   document.body.addEventListener(
@@ -202,44 +209,21 @@
     }
 
     /*
-      次の動画へ
+      次動画保存
     */
+
+    current++;
 
     localStorage.setItem(
       "currentVideo",
-      String(current + 1)
+      String(current)
     );
 
+    /*
+      リロード
+    */
+
     location.reload();
-  });
-
-  /*
-    ended対策
-  */
-
-  v.addEventListener("timeupdate", () => {
-
-    if (current === playlist.length - 1) {
-
-      if (
-        !isNaN(v.duration) &&
-        v.duration > 0
-      ) {
-
-        if (
-          v.currentTime >=
-          v.duration - 0.5
-        ) {
-
-          localStorage.setItem(
-            "currentVideo",
-            "0"
-          );
-
-          showTikTokButton();
-        }
-      }
-    }
   });
 
   /*
