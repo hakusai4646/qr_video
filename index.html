@@ -36,9 +36,15 @@
     "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_04_b5xlj1.mp4"
   ];
 
-  const tiktokUrl = "https://vt.tiktok.com/ZS9bRTAXU/";
+  // リロードごとに次の動画へ
+  let current = localStorage.getItem("currentVideo");
+  current = current ? parseInt(current) : 0;
 
-  let current = 0;
+  localStorage.setItem(
+    "currentVideo",
+    (current + 1) % playlist.length
+  );
+
   let soundOn = false;
 
   function playVideo() {
@@ -62,15 +68,6 @@
 
   document.body.addEventListener("touchstart", enableSound, { once: true });
   document.body.addEventListener("click", enableSound, { once: true });
-
-  v.addEventListener("ended", () => {
-    if (current === playlist.length - 1) {
-      window.location.href = tiktokUrl;
-    } else {
-      current++;
-      playVideo();
-    }
-  });
 
   playVideo();
 </script>
