@@ -7,96 +7,52 @@
   <title>Movie Player</title>
 
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
     }
 
-    body {
-      background: #000;
-      width: 100vw;
-      height: 100vh;
-      overflow: hidden;
+    body{
+      width:100vw;
+      height:100vh;
+      background:#000;
+      overflow:hidden;
 
-      display: flex;
-      justify-content: center;
-      align-items: center;
-
-      font-family: sans-serif;
+      display:flex;
+      justify-content:center;
+      align-items:center;
     }
 
-    .container {
-      width: 100%;
-      height: 100%;
-      position: relative;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    video {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      background: #000;
-    }
-
-    #tiktokBtn {
-      display: none;
-
-      position: absolute;
-      z-index: 10;
-
-      padding: 16px 28px;
-      border-radius: 9999px;
-
-      background: #ff0050;
-      color: #fff;
-
-      text-decoration: none;
-      font-size: 18px;
-      font-weight: bold;
+    video{
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      background:#000;
     }
   </style>
 </head>
 
 <body>
 
-  <div class="container">
-
-    <video
-      id="videoPlayer"
-      autoplay
-      controls
-      playsinline
-      webkit-playsinline
-    ></video>
-
-    <a
-      id="tiktokBtn"
-      href="https://www.tiktok.com/@shibu_yuu/video/7512383236824141077"
-      target="_blank"
-      rel="noopener"
-    >
-      TikTokも見てね
-    </a>
-
-  </div>
+  <video
+    id="video"
+    autoplay
+    controls
+    playsinline
+    webkit-playsinline
+  ></video>
 
   <script>
     /*
-      ============================
-      Cloudinary設定
-      ============================
+      まずこれで復旧する
+      Cloudinary名だけ入れる
     */
 
     const cloudName = "YOUR_CLOUD_NAME";
 
     /*
-      ============================
-      動画リスト
-      ============================
+      ここは今まで通り
     */
 
     const videos = [
@@ -109,95 +65,24 @@
     ];
 
     /*
-      ============================
-      要素取得
-      ============================
+      localStorage完全停止
+      まず動画再生だけ戻す
     */
 
-    const videoPlayer = document.getElementById("videoPlayer");
-    const tiktokBtn = document.getElementById("tiktokBtn");
+    const video = document.getElementById("video");
 
     /*
-      ============================
-      保存キー
-      ============================
+      まず1本目固定
     */
 
-    const STORAGE_KEY = "currentVideoIndex";
+    const firstVideo = videos[0];
 
-    /*
-      ============================
-      index取得
-      ============================
-    */
+    video.src =
+      `https://res.cloudinary.com/${cloudName}/video/upload/${firstVideo}.mp4`;
 
-    let currentIndex = Number(localStorage.getItem(STORAGE_KEY));
+    video.load();
 
-    if (
-      !Number.isInteger(currentIndex) ||
-      currentIndex < 0
-    ) {
-      currentIndex = 0;
-    }
-
-    /*
-      ============================
-      動画読み込み
-      ============================
-    */
-
-    function loadVideo(index) {
-
-      // 最後まで行った
-      if (index >= videos.length) {
-
-        videoPlayer.style.display = "none";
-
-        tiktokBtn.style.display = "inline-block";
-
-        localStorage.removeItem(STORAGE_KEY);
-
-        return;
-      }
-
-      const publicId = videos[index];
-
-      const videoUrl =
-        `https://res.cloudinary.com/${cloudName}/video/upload/${publicId}.mp4`;
-
-      videoPlayer.src = videoUrl;
-
-      videoPlayer.load();
-
-      videoPlayer.play().catch(() => {});
-    }
-
-    /*
-      ============================
-      初回ロード
-      ============================
-    */
-
-    loadVideo(currentIndex);
-
-    /*
-      ============================
-      再生終了時
-      ============================
-    */
-
-    videoPlayer.addEventListener("ended", () => {
-
-      currentIndex++;
-
-      localStorage.setItem(
-        STORAGE_KEY,
-        String(currentIndex)
-      );
-
-      loadVideo(currentIndex);
-    });
-
+    video.play().catch(() => {});
   </script>
 
 </body>
