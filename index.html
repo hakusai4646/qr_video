@@ -51,31 +51,21 @@
     current = 0;
   }
 
-  video.src = playlist[current];
-
   const next = (current + 1) % playlist.length;
   localStorage.setItem("currentVideoIndex", next);
 
-  function forcePlay() {
-    video.muted = true;
-    video.playsInline = true;
-    video.play().catch(() => {
-      setTimeout(forcePlay, 500);
-    });
-  }
+  video.muted = true;
+  video.playsInline = true;
+  video.src = playlist[current];
+  video.load();
 
-  video.addEventListener("loadedmetadata", forcePlay);
-  video.addEventListener("canplay", forcePlay);
+  video.addEventListener("loadeddata", () => {
+    video.play().catch(() => {});
+  }, { once: true });
 
-  document.addEventListener("visibilitychange", () => {
-    if (!document.hidden) {
-      forcePlay();
-    }
+  window.addEventListener("pageshow", () => {
+    video.play().catch(() => {});
   });
-
-  window.addEventListener("pageshow", forcePlay);
-
-  forcePlay();
 </script>
 
 </body>
