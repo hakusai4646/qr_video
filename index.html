@@ -45,26 +45,26 @@
     "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_04_b5xlj1.mp4"
   ];
 
-  let current = Number(localStorage.getItem("currentVideoIndex"));
+  let current = parseInt(localStorage.getItem("currentVideoIndex"), 10);
 
-  if (Number.isNaN(current) || current < 0 || current >= playlist.length) {
+  if (isNaN(current)) {
     current = 0;
   }
 
-  const next = (current + 1) % playlist.length;
-  localStorage.setItem("currentVideoIndex", next);
+  if (current >= playlist.length) {
+    current = 0;
+  }
 
-  video.muted = true;
-  video.playsInline = true;
   video.src = playlist[current];
-  video.load();
 
-  video.addEventListener("loadeddata", () => {
-    video.play().catch(() => {});
-  }, { once: true });
+  localStorage.setItem(
+    "currentVideoIndex",
+    current + 1
+  );
 
-  window.addEventListener("pageshow", () => {
-    video.play().catch(() => {});
+  video.play().catch(function () {
+    video.muted = true;
+    video.play().catch(function () {});
   });
 </script>
 
