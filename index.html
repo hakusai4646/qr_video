@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     html, body {
       margin: 0;
@@ -52,39 +52,52 @@
 </head>
 <body>
 
-<video id="video" autoplay muted playsinline webkit-playsinline preload="auto"></video>
+<video
+  id="video"
+  autoplay
+  muted
+  playsinline
+  webkit-playsinline
+  preload="auto"
+></video>
 
 <script>
   const video = document.getElementById("video");
 
   const playlist = [
-    "https://res.cloudinary.com/dl06u7sqw/video/upload/comment_tackki.mp4",
-    "https://res.cloudinary.com/dl06u7sqw/video/upload/SP03_hwjq9u.mp4",
-    "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_01_qgxbpb.mp4",
-    "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_02_akzgyu.mp4",
-    "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_03_ivwxwe.mp4",
-    "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_04_b5xlj1.mp4"
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/f_mp4,vc_h264,ac_aac/comment_tackki.mp4",
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/f_mp4,vc_h264,ac_aac/SP03_hwjq9u.mp4",
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/f_mp4,vc_h264,ac_aac/kakko_01_qgxbpb.mp4",
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/f_mp4,vc_h264,ac_aac/kakko_02_akzgyu.mp4",
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/f_mp4,vc_h264,ac_aac/kakko_03_ivwxwe.mp4",
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/f_mp4,vc_h264,ac_aac/kakko_04_b5xlj1.mp4"
   ];
 
   const tiktokUrl = "https://www.tiktok.com/@shibu_yuu/video/7512383236824141077?is_from_webapp=1&sender_device=pc&web_id=7274534222295090690";
 
-  const hasVisited = sessionStorage.getItem("hasVisited");
-  let current;
+  let current = Number(localStorage.getItem("currentVideoIndex"));
 
-  if (!hasVisited) {
+  if (Number.isNaN(current) || current < 0 || current >= playlist.length) {
     current = 0;
-    sessionStorage.setItem("hasVisited", "1");
-    localStorage.setItem("currentVideoIndex", 0);
-  } else {
-    current = parseInt(localStorage.getItem("currentVideoIndex"), 10);
-    if (isNaN(current) || current >= playlist.length) current = 0;
   }
 
-  function playCurrent() {
+  function setReloadNext() {
+    if (current < playlist.length - 1) {
+      localStorage.setItem("currentVideoIndex", current + 1);
+    } else {
+      localStorage.setItem("currentVideoIndex", 0);
+    }
+  }
+
+  function playVideo() {
     video.src = playlist[current];
     video.load();
 
-    video.play().catch(() => {});
+    setReloadNext();
+
+    video.oncanplay = () => {
+      video.play().catch(() => {});
+    };
   }
 
   function showEndScreen() {
@@ -98,42 +111,26 @@
     `;
   }
 
-  function nextVideo() {
+  video.addEventListener("ended", () => {
     if (current >= playlist.length - 1) {
       showEndScreen();
       return;
     }
 
     current++;
-    localStorage.setItem("currentVideoIndex", current);
-    playCurrent();
+    playVideo();
+  });
+
+  function enableSound() {
+    video.muted = false;
+    video.volume = 1;
+    video.play().catch(() => {});
   }
 
-  video.addEventListener("loadeddata", () => {
-    video.play().catch(() => {});
-  });
+  document.addEventListener("click", enableSound, { once: true });
+  document.addEventListener("touchstart", enableSound, { once: true });
 
-  video.addEventListener("ended", nextVideo);
-
-  window.addEventListener("pagehide", () => {
-    if (current < playlist.length - 1) {
-      localStorage.setItem("currentVideoIndex", current + 1);
-    }
-  });
-
-  document.addEventListener("click", () => {
-    video.muted = false;
-    video.volume = 1;
-    video.play().catch(() => {});
-  }, { once: true });
-
-  document.addEventListener("touchstart", () => {
-    video.muted = false;
-    video.volume = 1;
-    video.play().catch(() => {});
-  }, { once: true });
-
-  playCurrent();
+  playVideo();
 </script>
 
 </body>
