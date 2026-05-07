@@ -75,13 +75,21 @@
 
   const tiktokUrl = "https://www.tiktok.com/@shibu_yuu/video/7512383236824141077?is_from_webapp=1&sender_device=pc&web_id=7274534222295090690";
 
-  let current = Number(localStorage.getItem("currentVideoIndex"));
+  let current;
 
-  if (Number.isNaN(current) || current < 0 || current >= playlist.length) {
+  if (!sessionStorage.getItem("startedThisSession")) {
     current = 0;
+    sessionStorage.setItem("startedThisSession", "1");
+    localStorage.setItem("currentVideoIndex", 0);
+  } else {
+    current = Number(localStorage.getItem("currentVideoIndex"));
+
+    if (Number.isNaN(current) || current < 0 || current >= playlist.length) {
+      current = 0;
+    }
   }
 
-  function setReloadNext() {
+  function saveReloadNext() {
     if (current < playlist.length - 1) {
       localStorage.setItem("currentVideoIndex", current + 1);
     } else {
@@ -93,11 +101,9 @@
     video.src = playlist[current];
     video.load();
 
-    setReloadNext();
+    saveReloadNext();
 
-    video.oncanplay = () => {
-      video.play().catch(() => {});
-    };
+    video.play().catch(() => {});
   }
 
   function showEndScreen() {
