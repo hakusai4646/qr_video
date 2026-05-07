@@ -52,17 +52,10 @@
 </head>
 <body>
 
-<video
-  id="video"
-  autoplay
-  muted
-  playsinline
-  webkit-playsinline
-  preload="auto"
-></video>
+<video id="video" autoplay muted playsinline webkit-playsinline preload="auto"></video>
 
 <script>
-  const STORAGE_VERSION = "2026-05-07-final-01";
+  const STORAGE_VERSION = "2026-05-07-final-sound-01";
 
   const video = document.getElementById("video");
 
@@ -89,6 +82,8 @@
     localStorage.setItem("currentVideoIndex", "0");
   }
 
+  let soundEnabled = false;
+
   function saveNextForReload() {
     if (current >= playlist.length - 1) {
       localStorage.setItem("currentVideoIndex", "0");
@@ -97,14 +92,25 @@
     }
   }
 
+  function applySoundState() {
+    video.muted = !soundEnabled;
+    video.volume = 1;
+  }
+
   function playCurrentVideo() {
     video.src = playlist[current];
-    video.muted = true;
     video.playsInline = true;
+    applySoundState();
     video.load();
 
     saveNextForReload();
 
+    video.play().catch(() => {});
+  }
+
+  function enableSound() {
+    soundEnabled = true;
+    applySoundState();
     video.play().catch(() => {});
   }
 
@@ -130,12 +136,6 @@
     current++;
     playCurrentVideo();
   });
-
-  function enableSound() {
-    video.muted = false;
-    video.volume = 1;
-    video.play().catch(() => {});
-  }
 
   document.addEventListener("click", enableSound, { once: true });
   document.addEventListener("touchstart", enableSound, { once: true });
