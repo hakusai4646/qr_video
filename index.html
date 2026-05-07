@@ -1,42 +1,35 @@
-<video
-  id="video"
-  autoplay
-  muted
-  playsinline
-  webkit-playsinline
-  preload="auto"
-></video>
+video.addEventListener("ended", () => {
+  if (current === playlist.length - 1) {
+    document.body.innerHTML = `
+      <div style="
+        width:100vw;
+        height:100vh;
+        background:#000;
+        color:#fff;
+        display:flex;
+        flex-direction:column;
+        justify-content:center;
+        align-items:center;
+        font-size:24px;
+      ">
+        <p>TikTokも見てね</p>
 
-<script>
-  const video = document.getElementById("video");
-
-  const playlist = [
-    "https://res.cloudinary.com/dl06u7sqw/video/upload/comment_tackki.mp4",
-    "https://res.cloudinary.com/dl06u7sqw/video/upload/SP03_hwjq9u.mp4",
-    "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_01_qgxbpb.mp4",
-    "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_02_akzgyu.mp4",
-    "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_03_ivwxwe.mp4",
-    "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_04_b5xlj1.mp4"
-  ];
-
-  let current = parseInt(localStorage.getItem("currentVideoIndex"), 10);
-  if (isNaN(current) || current >= playlist.length) current = 0;
-
-  video.src = playlist[current];
-
-  localStorage.setItem(
-    "currentVideoIndex",
-    (current + 1) % playlist.length
-  );
-
-  video.play().catch(() => {});
-
-  function soundOn() {
-    video.muted = false;
-    video.volume = 1;
-    video.play().catch(() => {});
+        <a
+          href="https://www.tiktok.com/@shibu_yuu/video/7512383236824141077?is_from_webapp=1&sender_device=pc&web_id=7274534222295090690"
+          style="
+            margin-top:20px;
+            padding:16px 24px;
+            background:#fff;
+            color:#000;
+            text-decoration:none;
+            border-radius:999px;
+            font-size:18px;
+            font-weight:bold;
+          "
+        >
+          TikTokを見る
+        </a>
+      </div>
+    `;
   }
-
-  document.body.addEventListener("click", soundOn, { once: true });
-  document.body.addEventListener("touchstart", soundOn, { once: true });
-</script>
+});
