@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <style>
     html, body {
       margin: 0;
@@ -27,16 +28,22 @@
       height: 100vh;
       background: #000;
       color: #fff;
+
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      font-size: 24px;
+
+      text-align: center;
+    }
+
+    .end-screen p {
+      font-size: 28px;
+      margin-bottom: 24px;
     }
 
     .end-screen a {
-      margin-top: 20px;
-      padding: 16px 24px;
+      padding: 16px 28px;
       background: #fff;
       color: #000;
       text-decoration: none;
@@ -69,21 +76,17 @@
     "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_04_b5xlj1.mp4"
   ];
 
+  // 現在の動画番号取得
   let current = parseInt(localStorage.getItem("currentVideoIndex"), 10);
 
   if (isNaN(current) || current >= playlist.length) {
     current = 0;
   }
 
+  // 現在の動画をセット
   video.src = playlist[current];
 
-  // 次回用インデックス保存
-  localStorage.setItem(
-    "currentVideoIndex",
-    (current + 1) % playlist.length
-  );
-
-  // 自動再生
+  // 自動再生開始
   video.play().catch(() => {});
 
   // タップで音ON
@@ -93,15 +96,16 @@
     video.play().catch(() => {});
   }
 
-  document.body.addEventListener("click", enableSound, { once: true });
-  document.body.addEventListener("touchstart", enableSound, { once: true });
+  document.addEventListener("click", enableSound, { once: true });
+  document.addEventListener("touchstart", enableSound, { once: true });
 
-  // 最後の動画終了時
+  // 動画終了時
   video.addEventListener("ended", () => {
 
+    // 最後の動画ならTikTok導線
     if (current === playlist.length - 1) {
 
-      // リロード時は最初に戻す
+      // 次回リロード時は最初へ戻す
       localStorage.setItem("currentVideoIndex", 0);
 
       document.body.innerHTML = `
@@ -115,6 +119,30 @@
 
         </div>
       `;
+
+      return;
+    }
+
+    // 通常は次の動画へ
+    current++;
+
+    localStorage.setItem("currentVideoIndex", current);
+
+    video.src = playlist[current];
+
+    video.play().catch(() => {});
+  });
+
+  // リロード時は次の動画へ
+  window.addEventListener("beforeunload", () => {
+
+    // 最後の動画以外なら次へ
+    if (current < playlist.length - 1) {
+
+      localStorage.setItem(
+        "currentVideoIndex",
+        current + 1
+      );
     }
   });
 </script>
