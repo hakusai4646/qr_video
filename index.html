@@ -11,6 +11,7 @@
       height: 100%;
       overflow: hidden;
       background: #000;
+      font-family: sans-serif;
     }
 
     video {
@@ -31,7 +32,6 @@
       justify-content: center;
       align-items: center;
       text-align: center;
-      font-family: sans-serif;
     }
 
     .end-screen p {
@@ -62,6 +62,8 @@
 ></video>
 
 <script>
+  const STORAGE_VERSION = "2026-05-07-final-01";
+
   const video = document.getElementById("video");
 
   const playlist = [
@@ -75,44 +77,46 @@
 
   const tiktokUrl = "https://www.tiktok.com/@shibu_yuu/video/7512383236824141077?is_from_webapp=1&sender_device=pc&web_id=7274534222295090690";
 
-  let current;
+  if (localStorage.getItem("storageVersion") !== STORAGE_VERSION) {
+    localStorage.setItem("storageVersion", STORAGE_VERSION);
+    localStorage.setItem("currentVideoIndex", "0");
+  }
 
-  if (!sessionStorage.getItem("startedThisSession")) {
+  let current = Number(localStorage.getItem("currentVideoIndex"));
+
+  if (Number.isNaN(current) || current < 0 || current >= playlist.length) {
     current = 0;
-    sessionStorage.setItem("startedThisSession", "1");
-    localStorage.setItem("currentVideoIndex", 0);
-  } else {
-    current = Number(localStorage.getItem("currentVideoIndex"));
-
-    if (Number.isNaN(current) || current < 0 || current >= playlist.length) {
-      current = 0;
-    }
+    localStorage.setItem("currentVideoIndex", "0");
   }
 
-  function saveReloadNext() {
-    if (current < playlist.length - 1) {
-      localStorage.setItem("currentVideoIndex", current + 1);
+  function saveNextForReload() {
+    if (current >= playlist.length - 1) {
+      localStorage.setItem("currentVideoIndex", "0");
     } else {
-      localStorage.setItem("currentVideoIndex", 0);
+      localStorage.setItem("currentVideoIndex", String(current + 1));
     }
   }
 
-  function playVideo() {
+  function playCurrentVideo() {
     video.src = playlist[current];
+    video.muted = true;
+    video.playsInline = true;
     video.load();
 
-    saveReloadNext();
+    saveNextForReload();
 
     video.play().catch(() => {});
   }
 
   function showEndScreen() {
-    localStorage.setItem("currentVideoIndex", 0);
+    localStorage.setItem("currentVideoIndex", "0");
 
     document.body.innerHTML = `
       <div class="end-screen">
         <p>TikTokも見てね</p>
-        <a href="${tiktokUrl}">TikTokを見る</a>
+        <a href="${tiktokUrl}">
+          TikTokを見る
+        </a>
       </div>
     `;
   }
@@ -124,7 +128,7 @@
     }
 
     current++;
-    playVideo();
+    playCurrentVideo();
   });
 
   function enableSound() {
@@ -136,7 +140,7 @@
   document.addEventListener("click", enableSound, { once: true });
   document.addEventListener("touchstart", enableSound, { once: true });
 
-  playVideo();
+  playCurrentVideo();
 </script>
 
 </body>
