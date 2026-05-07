@@ -1,35 +1,123 @@
-video.addEventListener("ended", () => {
-  if (current === playlist.length - 1) {
-    document.body.innerHTML = `
-      <div style="
-        width:100vw;
-        height:100vh;
-        background:#000;
-        color:#fff;
-        display:flex;
-        flex-direction:column;
-        justify-content:center;
-        align-items:center;
-        font-size:24px;
-      ">
-        <p>TikTokも見てね</p>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+      font-family: sans-serif;
+    }
 
-        <a
-          href="https://www.tiktok.com/@shibu_yuu/video/7512383236824141077?is_from_webapp=1&sender_device=pc&web_id=7274534222295090690"
-          style="
-            margin-top:20px;
-            padding:16px 24px;
-            background:#fff;
-            color:#000;
-            text-decoration:none;
-            border-radius:999px;
-            font-size:18px;
-            font-weight:bold;
-          "
-        >
-          TikTokを見る
-        </a>
-      </div>
-    `;
+    video {
+      width: 100vw;
+      height: 100vh;
+      object-fit: contain;
+      display: block;
+      background: #000;
+    }
+
+    .end-screen {
+      width: 100vw;
+      height: 100vh;
+      background: #000;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-size: 24px;
+    }
+
+    .end-screen a {
+      margin-top: 20px;
+      padding: 16px 24px;
+      background: #fff;
+      color: #000;
+      text-decoration: none;
+      border-radius: 999px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<video
+  id="video"
+  autoplay
+  muted
+  playsinline
+  webkit-playsinline
+  preload="auto"
+></video>
+
+<script>
+  const video = document.getElementById("video");
+
+  const playlist = [
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/comment_tackki.mp4",
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/SP03_hwjq9u.mp4",
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_01_qgxbpb.mp4",
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_02_akzgyu.mp4",
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_03_ivwxwe.mp4",
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_04_b5xlj1.mp4"
+  ];
+
+  let current = parseInt(localStorage.getItem("currentVideoIndex"), 10);
+
+  if (isNaN(current) || current >= playlist.length) {
+    current = 0;
   }
-});
+
+  video.src = playlist[current];
+
+  // 次回用インデックス保存
+  localStorage.setItem(
+    "currentVideoIndex",
+    (current + 1) % playlist.length
+  );
+
+  // 自動再生
+  video.play().catch(() => {});
+
+  // タップで音ON
+  function enableSound() {
+    video.muted = false;
+    video.volume = 1;
+    video.play().catch(() => {});
+  }
+
+  document.body.addEventListener("click", enableSound, { once: true });
+  document.body.addEventListener("touchstart", enableSound, { once: true });
+
+  // 最後の動画終了時
+  video.addEventListener("ended", () => {
+
+    if (current === playlist.length - 1) {
+
+      // リロード時は最初に戻す
+      localStorage.setItem("currentVideoIndex", 0);
+
+      document.body.innerHTML = `
+        <div class="end-screen">
+
+          <p>TikTokも見てね</p>
+
+          <a href="https://www.tiktok.com/@shibu_yuu/video/7512383236824141077?is_from_webapp=1&sender_device=pc&web_id=7274534222295090690">
+            TikTokを見る
+          </a>
+
+        </div>
+      `;
+    }
+  });
+</script>
+
+</body>
+</html>
