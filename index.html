@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <style>
-    html, body {
+    html,
+    body {
       margin: 0;
       padding: 0;
       width: 100%;
@@ -27,10 +29,12 @@
       height: 100vh;
       background: #000;
       color: #fff;
+
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
+
       text-align: center;
     }
 
@@ -52,11 +56,16 @@
 </head>
 <body>
 
-<video id="video" autoplay muted playsinline webkit-playsinline preload="auto"></video>
+<video
+  id="video"
+  autoplay
+  muted
+  playsinline
+  webkit-playsinline
+  preload="auto"
+></video>
 
 <script>
-  const STORAGE_VERSION = "2026-05-07-final-sound-01";
-
   const video = document.getElementById("video");
 
   const playlist = [
@@ -68,79 +77,121 @@
     "https://res.cloudinary.com/dl06u7sqw/video/upload/f_mp4,vc_h264,ac_aac/kakko_04_b5xlj1.mp4"
   ];
 
-  const tiktokUrl = "https://www.tiktok.com/@shibu_yuu/video/7512383236824141077?is_from_webapp=1&sender_device=pc&web_id=7274534222295090690";
+  const tiktokUrl =
+    "https://www.tiktok.com/@shibu_yuu/video/7512383236824141077?is_from_webapp=1&sender_device=pc&web_id=7274534222295090690";
 
-  if (localStorage.getItem("storageVersion") !== STORAGE_VERSION) {
-    localStorage.setItem("storageVersion", STORAGE_VERSION);
-    localStorage.setItem("currentVideoIndex", "0");
-  }
+  // 初回は0
+  let current = parseInt(localStorage.getItem("currentVideoIndex"), 10);
 
-  let current = Number(localStorage.getItem("currentVideoIndex"));
-
-  if (Number.isNaN(current) || current < 0 || current >= playlist.length) {
+  if (isNaN(current)) {
     current = 0;
-    localStorage.setItem("currentVideoIndex", "0");
   }
 
-  let soundEnabled = false;
+  // 音状態保存
+  let soundOn = localStorage.getItem("soundOn") === "1";
 
-  function saveNextForReload() {
-    if (current >= playlist.length - 1) {
-      localStorage.setItem("currentVideoIndex", "0");
-    } else {
-      localStorage.setItem("currentVideoIndex", String(current + 1));
-    }
-  }
-
-  function applySoundState() {
-    video.muted = !soundEnabled;
+  function applySound() {
+    video.muted = !soundOn;
     video.volume = 1;
   }
 
-  function playCurrentVideo() {
+  function playVideo(index) {
+    current = index;
+
     video.src = playlist[current];
-    video.playsInline = true;
-    applySoundState();
+
+    applySound();
+
     video.load();
 
-    saveNextForReload();
-
-    video.play().catch(() => {});
+    video.onloadeddata = () => {
+      video.play().catch(() => {});
+    };
   }
 
+  // 最初再生
+  playVideo(current);
+
+  // タップで音ON
   function enableSound() {
-    soundEnabled = true;
-    applySoundState();
+    soundOn = true;
+
+    localStorage.setItem("soundOn", "1");
+
+    applySound();
+
     video.play().catch(() => {});
   }
 
-  function showEndScreen() {
-    localStorage.setItem("currentVideoIndex", "0");
+  document.addEventListener(
+    "click",
+    enableSound,
+    { once: true }
+  );
 
-    document.body.innerHTML = `
-      <div class="end-screen">
-        <p>TikTokも見てね</p>
-        <a href="${tiktokUrl}">
-          TikTokを見る
-        </a>
-      </div>
-    `;
-  }
+  document.addEventListener(
+    "touchstart",
+    enableSound,
+    { once: true }
+  );
 
+  // 動画終了
   video.addEventListener("ended", () => {
-    if (current >= playlist.length - 1) {
-      showEndScreen();
+
+    // 最後ならTikTok導線
+    if (current === playlist.length - 1) {
+
+      localStorage.setItem(
+        "currentVideoIndex",
+        "0"
+      );
+
+      document.body.innerHTML = `
+        <div class="end-screen">
+
+          <p>TikTokも見てね</p>
+
+          <a href="${tiktokUrl}">
+            TikTokを見る
+          </a>
+
+        </div>
+      `;
+
       return;
     }
 
+    // 次動画
     current++;
-    playCurrentVideo();
+
+    localStorage.setItem(
+      "currentVideoIndex",
+      current
+    );
+
+    playVideo(current);
   });
 
-  document.addEventListener("click", enableSound, { once: true });
-  document.addEventListener("touchstart", enableSound, { once: true });
+  // リロード時も次へ
+  window.addEventListener("pagehide", () => {
 
-  playCurrentVideo();
+    // 最後以外
+    if (current < playlist.length - 1) {
+
+      localStorage.setItem(
+        "currentVideoIndex",
+        current + 1
+      );
+
+    } else {
+
+      // 最後なら最初へ
+      localStorage.setItem(
+        "currentVideoIndex",
+        "0"
+      );
+    }
+  });
 </script>
 
 </body>
