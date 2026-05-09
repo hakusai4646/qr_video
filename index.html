@@ -1,52 +1,71 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Google tag (gtag.js) -->
+  <!-- Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-2E0VMFCTM2"></script>
+
   <script>
     window.dataLayer = window.dataLayer || [];
+
     function gtag() {
       dataLayer.push(arguments);
     }
-    gtag('js', new Date());
-    gtag('config', 'G-2E0VMFCTM2');
+
+    gtag("js", new Date());
+
+    gtag("config", "G-2E0VMFCTM2");
   </script>
 
   <style>
-    html, body {
+    html,
+    body {
       margin: 0;
       padding: 0;
       width: 100%;
       height: 100%;
-      background: #000;
       overflow: hidden;
+      background: #000;
+      font-family: sans-serif;
     }
 
     video {
-      width: 100%;
-      height: 100%;
+      width: 100vw;
+      height: 100vh;
       object-fit: contain;
       display: block;
       background: #000;
     }
 
-    #tiktokButton {
-      display: none;
-      position: fixed;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      padding: 18px 30px;
-      background: #ff0050;
+    .end-screen {
+      width: 100vw;
+      height: 100vh;
+      background: #000;
       color: #fff;
-      font-size: 18px;
-      font-weight: bold;
+
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+
+      text-align: center;
+    }
+
+    .end-screen p {
+      font-size: 28px;
+      margin-bottom: 24px;
+    }
+
+    .end-screen a {
+      padding: 16px 28px;
+      background: #fff;
+      color: #000;
       text-decoration: none;
       border-radius: 999px;
-      z-index: 100;
+      font-size: 18px;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -56,113 +75,200 @@
 <video
   id="video"
   autoplay
-  muted
   playsinline
   webkit-playsinline
   preload="auto"
 ></video>
 
-<a
-  id="tiktokButton"
-  href="https://www.tiktok.com/@shibu_yuu/video/7512383236824141077"
-  target="_blank"
-  rel="noopener"
->
-  TikTokも見てね
-</a>
-
 <script>
-  const v = document.getElementById("video");
-  const tiktokButton = document.getElementById("tiktokButton");
+  const video = document.getElementById("video");
 
   const playlist = [
-    "https://res.cloudinary.com/dl06u7sqw/video/upload/comment_tackki.mp4",
-    "https://res.cloudinary.com/dl06u7sqw/video/upload/SP03_hwjq9u.mp4",
-    "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_01_qgxbpb.mp4",
-    "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_02_akzgyu.mp4",
-    "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_03_ivwxwe.mp4",
-    "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_04_b5xlj1.mp4"
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/f_mp4,vc_h264,ac_aac/comment_tackki.mp4",
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/f_mp4,vc_h264,ac_aac/0501_off2_2_e6wqit.mp4",
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/f_mp4,vc_h264,ac_aac/SP03_hwjq9u.mp4",
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/f_mp4,vc_h264,ac_aac/icy_SP_rejqjg.mp4",
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/f_mp4,vc_h264,ac_aac/kakko_01_qgxbpb.mp4",
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/f_mp4,vc_h264,ac_aac/kakko_02_akzgyu.mp4",
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/f_mp4,vc_h264,ac_aac/kakko_03_ivwxwe.mp4",
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/f_mp4,vc_h264,ac_aac/kakko_04_b5xlj1.mp4"
   ];
 
-  let current = parseInt(localStorage.getItem("currentVideo") || "0", 10);
-  let soundOn = localStorage.getItem("soundOn") === "true";
+  const tiktokUrl =
+    "https://www.tiktok.com/@shibu_yuu/video/7512383236824141077?is_from_webapp=1&sender_device=pc&web_id=7274534222295090690";
 
-  if (isNaN(current) || current < 0 || current >= playlist.length) {
+  let current;
+
+  if (!sessionStorage.getItem("started")) {
+
     current = 0;
-    localStorage.setItem("currentVideo", "0");
+
+    sessionStorage.setItem("started", "1");
+
+    sessionStorage.setItem(
+      "currentVideoIndex",
+      "0"
+    );
+
+  } else {
+
+    current = parseInt(
+      sessionStorage.getItem("currentVideoIndex"),
+      10
+    );
+
+    if (
+      isNaN(current) ||
+      current >= playlist.length
+    ) {
+      current = 0;
+    }
   }
 
-  function sendEvent(name) {
+  let soundOn =
+    sessionStorage.getItem("soundOn") === "1";
+
+  function track(eventName, extra = {}) {
+
     if (typeof gtag === "function") {
-      gtag("event", name, {
-        video_number: current + 1,
-        video_url: playlist[current]
+
+      gtag("event", eventName, {
+        video_index: current + 1,
+        video_url: playlist[current],
+        ...extra
       });
     }
   }
 
-  function playVideo() {
-    v.src = playlist[current];
+  function applySound() {
 
-    if (soundOn) {
-      v.muted = false;
-      v.volume = 1.0;
-    } else {
-      v.muted = true;
-    }
+    video.muted = !soundOn;
 
-    v.load();
+    video.volume = 1;
+  }
 
-    v.play().then(() => {
-      sendEvent("video_play");
-    }).catch(() => {
-      v.muted = true;
-      v.play().catch(() => {});
-    });
+  function playVideo(index) {
+
+    current = index;
+
+    video.src = playlist[current];
+
+    applySound();
+
+    video.load();
+
+    video.onloadeddata = () => {
+
+      video.play().then(() => {
+
+        track("video_play");
+
+      }).catch(() => {});
+    };
   }
 
   function enableSound() {
+
     soundOn = true;
-    localStorage.setItem("soundOn", "true");
 
-    v.muted = false;
-    v.volume = 1.0;
+    sessionStorage.setItem(
+      "soundOn",
+      "1"
+    );
 
-    v.play().catch(() => {});
+    applySound();
+
+    video.play().catch(() => {});
+
+    track("sound_enabled");
   }
 
-  function showTikTokButton() {
-    localStorage.setItem("currentVideo", "0");
+  function showEndScreen() {
 
-    v.pause();
-    v.style.display = "none";
+    sessionStorage.setItem(
+      "currentVideoIndex",
+      "0"
+    );
 
-    tiktokButton.style.display = "block";
+    track("tiktok_button_show");
 
-    if (typeof gtag === "function") {
-      gtag("event", "tiktok_button_show");
-    }
+    document.body.innerHTML = `
+      <div class="end-screen">
+        <p>TikTokも見てね</p>
+
+        <a
+          href="${tiktokUrl}"
+          target="_blank"
+          rel="noopener"
+          id="tiktokLink"
+        >
+          TikTokを見る
+        </a>
+      </div>
+    `;
+
+    const tiktokLink =
+      document.getElementById("tiktokLink");
+
+    tiktokLink.addEventListener("click", () => {
+
+      track("tiktok_click");
+    });
   }
 
-  document.body.addEventListener("touchstart", enableSound, { once: true });
-  document.body.addEventListener("click", enableSound, { once: true });
+  video.addEventListener("ended", () => {
 
-  v.addEventListener("ended", () => {
-    sendEvent("video_end");
+    track("video_end");
 
     if (current === playlist.length - 1) {
-      showTikTokButton();
+
+      showEndScreen();
+
       return;
     }
 
     current++;
 
-    localStorage.setItem("currentVideo", String(current));
+    sessionStorage.setItem(
+      "currentVideoIndex",
+      current
+    );
 
-    location.reload();
+    playVideo(current);
   });
 
-  playVideo();
+  window.addEventListener("pagehide", () => {
+
+    if (current < playlist.length - 1) {
+
+      sessionStorage.setItem(
+        "currentVideoIndex",
+        current + 1
+      );
+
+    } else {
+
+      sessionStorage.setItem(
+        "currentVideoIndex",
+        "0"
+      );
+    }
+  });
+
+  document.addEventListener(
+    "click",
+    enableSound,
+    { once: true }
+  );
+
+  document.addEventListener(
+    "touchstart",
+    enableSound,
+    { once: true }
+  );
+
+  playVideo(current);
+
 </script>
 
 </body>
