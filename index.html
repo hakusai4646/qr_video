@@ -6,17 +6,22 @@
 
   <!-- Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-2E0VMFCTM2"></script>
+
   <script>
     window.dataLayer = window.dataLayer || [];
+
     function gtag() {
       dataLayer.push(arguments);
     }
+
     gtag("js", new Date());
+
     gtag("config", "G-2E0VMFCTM2");
   </script>
 
   <style>
-    html, body {
+    html,
+    body {
       margin: 0;
       padding: 0;
       width: 100%;
@@ -37,12 +42,15 @@
     .end-screen {
       width: 100vw;
       height: 100vh;
+
       background: #000;
       color: #fff;
+
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
+
       text-align: center;
     }
 
@@ -53,10 +61,14 @@
 
     .end-screen a {
       padding: 16px 28px;
+
       background: #fff;
       color: #000;
+
       text-decoration: none;
+
       border-radius: 999px;
+
       font-size: 18px;
       font-weight: bold;
     }
@@ -92,17 +104,26 @@
   const tiktokUrl =
     "https://www.tiktok.com/@shibu_yuu/video/7512383236824141077?is_from_webapp=1&sender_device=pc&web_id=7274534222295090690";
 
-  let current = parseInt(sessionStorage.getItem("currentVideoIndex") || "0", 10);
+  let current = parseInt(
+    sessionStorage.getItem("currentVideoIndex") || "0",
+    10
+  );
 
-  if (isNaN(current) || current < 0 || current >= playlist.length) {
+  if (
+    isNaN(current) ||
+    current < 0 ||
+    current >= playlist.length
+  ) {
     current = 0;
-    sessionStorage.setItem("currentVideoIndex", "0");
   }
 
-  let soundOn = sessionStorage.getItem("soundOn") === "1";
+  let soundOn =
+    sessionStorage.getItem("soundOn") === "1";
 
   function track(eventName) {
+
     if (typeof gtag === "function") {
+
       gtag("event", eventName, {
         video_index: current + 1,
         video_url: playlist[current]
@@ -111,45 +132,90 @@
   }
 
   function applySound() {
-    video.muted = !soundOn;
+
+    if (soundOn) {
+
+      video.muted = false;
+
+    } else {
+
+      video.muted = true;
+    }
+
     video.volume = 1;
+  }
+
+  function forcePlay() {
+
+    const promise = video.play();
+
+    if (promise !== undefined) {
+
+      promise.then(() => {
+
+        track("video_play");
+
+      }).catch(() => {
+
+        video.muted = true;
+
+        video.play().catch(() => {});
+      });
+    }
   }
 
   function playVideo(index) {
+
     current = index;
-    sessionStorage.setItem("currentVideoIndex", String(current));
+
+    sessionStorage.setItem(
+      "currentVideoIndex",
+      String(current)
+    );
 
     video.src = playlist[current];
+
     applySound();
+
     video.load();
 
-    video.play().then(() => {
-      track("video_play");
-    }).catch(() => {
-      video.muted = true;
-      video.play().catch(() => {});
-    });
+    video.oncanplay = () => {
+
+      forcePlay();
+    };
   }
 
   function enableSound() {
+
     soundOn = true;
-    sessionStorage.setItem("soundOn", "1");
+
+    sessionStorage.setItem(
+      "soundOn",
+      "1"
+    );
 
     video.muted = false;
+
     video.volume = 1;
-    video.play().catch(() => {});
+
+    forcePlay();
 
     track("sound_enabled");
   }
 
   function showEndScreen() {
-    sessionStorage.setItem("currentVideoIndex", "0");
+
+    sessionStorage.setItem(
+      "currentVideoIndex",
+      "0"
+    );
 
     track("tiktok_button_show");
 
     document.body.innerHTML = `
       <div class="end-screen">
         <p>TikTokも見てね</p>
+
         <a
           href="${tiktokUrl}"
           target="_blank"
@@ -161,29 +227,47 @@
       </div>
     `;
 
-    document.getElementById("tiktokLink").addEventListener("click", () => {
-      if (typeof gtag === "function") {
-        gtag("event", "tiktok_click");
-      }
+    const tiktokLink =
+      document.getElementById("tiktokLink");
+
+    tiktokLink.addEventListener("click", () => {
+
+      track("tiktok_click");
     });
   }
 
   video.addEventListener("ended", () => {
+
     track("video_end");
 
     if (current === playlist.length - 1) {
+
       showEndScreen();
+
       return;
     }
 
     current++;
+
     playVideo(current);
   });
 
-  document.addEventListener("click", enableSound, { once: true });
-  document.addEventListener("touchstart", enableSound, { once: true });
+  document.addEventListener(
+    "click",
+    enableSound,
+    { once: true }
+  );
+
+  document.addEventListener(
+    "touchstart",
+    enableSound,
+    { once: true }
+  );
+
+  forcePlay();
 
   playVideo(current);
+
 </script>
 
 </body>
