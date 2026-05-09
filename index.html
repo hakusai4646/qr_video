@@ -6,89 +6,59 @@
 
   <!-- Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-2E0VMFCTM2"></script>
-
   <script>
     window.dataLayer = window.dataLayer || [];
-
     function gtag() {
       dataLayer.push(arguments);
     }
-
     gtag("js", new Date());
-
     gtag("config", "G-2E0VMFCTM2");
   </script>
 
   <style>
-    html,
-    body {
+    html, body {
       margin: 0;
       padding: 0;
       width: 100%;
       height: 100%;
-      background: #000;
       overflow: hidden;
-    }
-
-    body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      background: #000;
+      font-family: sans-serif;
     }
 
     video {
       width: 100%;
-      height: auto;
-
-      max-width: 100vw;
-      max-height: 100dvh;
-
+      height: 100%;
       object-fit: contain;
-
       display: block;
-
       background: #000;
-
-      opacity: 0;
-
-      transition: opacity 0.2s linear;
     }
 
     .end-screen {
       width: 100vw;
-      height: 100dvh;
-
+      height: 100vh;
       background: #000;
       color: #fff;
-
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-
       text-align: center;
     }
 
     .end-screen p {
       font-size: 28px;
       margin-bottom: 24px;
-      font-family: sans-serif;
     }
 
     .end-screen a {
       padding: 16px 28px;
-
       background: #fff;
       color: #000;
-
       text-decoration: none;
-
       border-radius: 999px;
-
       font-size: 18px;
       font-weight: bold;
-
-      font-family: sans-serif;
     }
   </style>
 </head>
@@ -98,6 +68,7 @@
 <video
   id="video"
   autoplay
+  muted
   playsinline
   webkit-playsinline
   preload="auto"
@@ -121,109 +92,64 @@
   const tiktokUrl =
     "https://www.tiktok.com/@shibu_yuu/video/7512383236824141077?is_from_webapp=1&sender_device=pc&web_id=7274534222295090690";
 
-  let current;
+  let current = parseInt(sessionStorage.getItem("currentVideoIndex") || "0", 10);
 
-  if (!sessionStorage.getItem("started")) {
-
+  if (isNaN(current) || current < 0 || current >= playlist.length) {
     current = 0;
-
-    sessionStorage.setItem("started", "1");
-
-    sessionStorage.setItem(
-      "currentVideoIndex",
-      "0"
-    );
-
-  } else {
-
-    current = parseInt(
-      sessionStorage.getItem("currentVideoIndex"),
-      10
-    );
-
-    if (
-      isNaN(current) ||
-      current >= playlist.length
-    ) {
-      current = 0;
-    }
+    sessionStorage.setItem("currentVideoIndex", "0");
   }
 
-  let soundOn =
-    sessionStorage.getItem("soundOn") === "1";
+  let soundOn = sessionStorage.getItem("soundOn") === "1";
 
-  function track(eventName, extra = {}) {
-
+  function track(eventName) {
     if (typeof gtag === "function") {
-
       gtag("event", eventName, {
         video_index: current + 1,
-        video_url: playlist[current],
-        ...extra
+        video_url: playlist[current]
       });
     }
   }
 
   function applySound() {
-
     video.muted = !soundOn;
-
     video.volume = 1;
   }
 
   function playVideo(index) {
-
     current = index;
-
-    video.style.opacity = "0";
+    sessionStorage.setItem("currentVideoIndex", String(current));
 
     video.src = playlist[current];
-
     applySound();
-
     video.load();
 
-    video.onloadeddata = () => {
-
-      video.play().then(() => {
-
-        video.style.opacity = "1";
-
-        track("video_play");
-
-      }).catch(() => {});
-    };
+    video.play().then(() => {
+      track("video_play");
+    }).catch(() => {
+      video.muted = true;
+      video.play().catch(() => {});
+    });
   }
 
   function enableSound() {
-
     soundOn = true;
+    sessionStorage.setItem("soundOn", "1");
 
-    sessionStorage.setItem(
-      "soundOn",
-      "1"
-    );
-
-    applySound();
-
+    video.muted = false;
+    video.volume = 1;
     video.play().catch(() => {});
 
     track("sound_enabled");
   }
 
   function showEndScreen() {
-
-    sessionStorage.setItem(
-      "currentVideoIndex",
-      "0"
-    );
+    sessionStorage.setItem("currentVideoIndex", "0");
 
     track("tiktok_button_show");
 
     document.body.innerHTML = `
       <div class="end-screen">
         <p>TikTokも見てね</p>
-
         <a
           href="${tiktokUrl}"
           target="_blank"
@@ -235,68 +161,29 @@
       </div>
     `;
 
-    const tiktokLink =
-      document.getElementById("tiktokLink");
-
-    tiktokLink.addEventListener("click", () => {
-
-      track("tiktok_click");
+    document.getElementById("tiktokLink").addEventListener("click", () => {
+      if (typeof gtag === "function") {
+        gtag("event", "tiktok_click");
+      }
     });
   }
 
   video.addEventListener("ended", () => {
-
     track("video_end");
 
     if (current === playlist.length - 1) {
-
       showEndScreen();
-
       return;
     }
 
     current++;
-
-    sessionStorage.setItem(
-      "currentVideoIndex",
-      current
-    );
-
     playVideo(current);
   });
 
-  window.addEventListener("pagehide", () => {
-
-    if (current < playlist.length - 1) {
-
-      sessionStorage.setItem(
-        "currentVideoIndex",
-        current + 1
-      );
-
-    } else {
-
-      sessionStorage.setItem(
-        "currentVideoIndex",
-        "0"
-      );
-    }
-  });
-
-  document.addEventListener(
-    "click",
-    enableSound,
-    { once: true }
-  );
-
-  document.addEventListener(
-    "touchstart",
-    enableSound,
-    { once: true }
-  );
+  document.addEventListener("click", enableSound, { once: true });
+  document.addEventListener("touchstart", enableSound, { once: true });
 
   playVideo(current);
-
 </script>
 
 </body>
