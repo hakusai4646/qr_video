@@ -1,219 +1,168 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-2E0VMFCTM2"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+    gtag('js', new Date());
+    gtag('config', 'G-2E0VMFCTM2');
+  </script>
 
   <style>
-    html,
-    body {
+    html, body {
       margin: 0;
       padding: 0;
       width: 100%;
       height: 100%;
-      overflow: hidden;
       background: #000;
-      font-family: sans-serif;
+      overflow: hidden;
     }
 
     video {
-      width: 100vw;
-      height: 100vh;
+      width: 100%;
+      height: 100%;
       object-fit: contain;
       display: block;
       background: #000;
     }
 
-    .end-screen {
-      width: 100vw;
-      height: 100vh;
-      background: #000;
+    #tiktokButton {
+      display: none;
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      padding: 18px 30px;
+      background: #ff0050;
       color: #fff;
-
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-
-      text-align: center;
-    }
-
-    .end-screen p {
-      font-size: 28px;
-      margin-bottom: 24px;
-    }
-
-    .end-screen a {
-      padding: 16px 28px;
-      background: #fff;
-      color: #000;
-      text-decoration: none;
-      border-radius: 999px;
       font-size: 18px;
       font-weight: bold;
+      text-decoration: none;
+      border-radius: 999px;
+      z-index: 100;
     }
   </style>
 </head>
+
 <body>
 
 <video
   id="video"
   autoplay
+  muted
   playsinline
   webkit-playsinline
   preload="auto"
 ></video>
 
+<a
+  id="tiktokButton"
+  href="https://www.tiktok.com/@shibu_yuu/video/7512383236824141077"
+  target="_blank"
+  rel="noopener"
+>
+  TikTokも見てね
+</a>
+
 <script>
-  const video = document.getElementById("video");
+  const v = document.getElementById("video");
+  const tiktokButton = document.getElementById("tiktokButton");
 
   const playlist = [
-
-    // ①
-    "https://res.cloudinary.com/dl06u7sqw/video/upload/f_mp4,vc_h264,ac_aac/comment_tackki.mp4",
-
-    // ② 新規追加
-    "https://res.cloudinary.com/dl06u7sqw/video/upload/f_mp4,vc_h264,ac_aac/0501_off2_2_e6wqit.mp4",
-
-    // ③
-    "https://res.cloudinary.com/dl06u7sqw/video/upload/f_mp4,vc_h264,ac_aac/SP03_hwjq9u.mp4",
-
-    // ④
-    "https://res.cloudinary.com/dl06u7sqw/video/upload/f_mp4,vc_h264,ac_aac/icy_SP_rejqjg.mp4",
-
-    // ⑤
-    "https://res.cloudinary.com/dl06u7sqw/video/upload/f_mp4,vc_h264,ac_aac/kakko_01_qgxbpb.mp4",
-
-    // ⑥
-    "https://res.cloudinary.com/dl06u7sqw/video/upload/f_mp4,vc_h264,ac_aac/kakko_02_akzgyu.mp4",
-
-    // ⑦
-    "https://res.cloudinary.com/dl06u7sqw/video/upload/f_mp4,vc_h264,ac_aac/kakko_03_ivwxwe.mp4",
-
-    // ⑧
-    "https://res.cloudinary.com/dl06u7sqw/video/upload/f_mp4,vc_h264,ac_aac/kakko_04_b5xlj1.mp4"
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/comment_tackki.mp4",
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/SP03_hwjq9u.mp4",
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_01_qgxbpb.mp4",
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_02_akzgyu.mp4",
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_03_ivwxwe.mp4",
+    "https://res.cloudinary.com/dl06u7sqw/video/upload/kakko_04_b5xlj1.mp4"
   ];
 
-  const tiktokUrl =
-    "https://www.tiktok.com/@shibu_yuu/video/7512383236824141077?is_from_webapp=1&sender_device=pc&web_id=7274534222295090690";
+  let current = parseInt(localStorage.getItem("currentVideo") || "0", 10);
+  let soundOn = localStorage.getItem("soundOn") === "true";
 
-  let current = parseInt(
-    localStorage.getItem("currentVideoIndex"),
-    10
-  );
-
-  if (isNaN(current)) {
+  if (isNaN(current) || current < 0 || current >= playlist.length) {
     current = 0;
+    localStorage.setItem("currentVideo", "0");
   }
 
-  let soundOn =
-    localStorage.getItem("soundOn") === "1";
-
-  function applySound() {
-    video.muted = !soundOn;
-    video.volume = 1;
+  function sendEvent(name) {
+    if (typeof gtag === "function") {
+      gtag("event", name, {
+        video_number: current + 1,
+        video_url: playlist[current]
+      });
+    }
   }
 
-  function playVideo(index) {
+  function playVideo() {
+    v.src = playlist[current];
 
-    current = index;
+    if (soundOn) {
+      v.muted = false;
+      v.volume = 1.0;
+    } else {
+      v.muted = true;
+    }
 
-    video.src = playlist[current];
+    v.load();
 
-    applySound();
-
-    video.load();
-
-    video.onloadeddata = () => {
-      video.play().catch(() => {});
-    };
+    v.play().then(() => {
+      sendEvent("video_play");
+    }).catch(() => {
+      v.muted = true;
+      v.play().catch(() => {});
+    });
   }
 
-  // 最初再生
-  playVideo(current);
-
-  // タップで音ON
   function enableSound() {
-
     soundOn = true;
+    localStorage.setItem("soundOn", "true");
 
-    localStorage.setItem(
-      "soundOn",
-      "1"
-    );
+    v.muted = false;
+    v.volume = 1.0;
 
-    applySound();
-
-    video.play().catch(() => {});
+    v.play().catch(() => {});
   }
 
-  document.addEventListener(
-    "click",
-    enableSound,
-    { once: true }
-  );
+  function showTikTokButton() {
+    localStorage.setItem("currentVideo", "0");
 
-  document.addEventListener(
-    "touchstart",
-    enableSound,
-    { once: true }
-  );
+    v.pause();
+    v.style.display = "none";
 
-  // 動画終了
-  video.addEventListener("ended", () => {
+    tiktokButton.style.display = "block";
 
-    // 最後ならTikTok導線
+    if (typeof gtag === "function") {
+      gtag("event", "tiktok_button_show");
+    }
+  }
+
+  document.body.addEventListener("touchstart", enableSound, { once: true });
+  document.body.addEventListener("click", enableSound, { once: true });
+
+  v.addEventListener("ended", () => {
+    sendEvent("video_end");
+
     if (current === playlist.length - 1) {
-
-      localStorage.setItem(
-        "currentVideoIndex",
-        "0"
-      );
-
-      document.body.innerHTML = `
-        <div class="end-screen">
-
-          <p>TikTokも見てね</p>
-
-          <a href="${tiktokUrl}">
-            TikTokを見る
-          </a>
-
-        </div>
-      `;
-
+      showTikTokButton();
       return;
     }
 
-    // 次動画
     current++;
 
-    localStorage.setItem(
-      "currentVideoIndex",
-      current
-    );
+    localStorage.setItem("currentVideo", String(current));
 
-    playVideo(current);
+    location.reload();
   });
 
-  // リロード時も次へ
-  window.addEventListener("pagehide", () => {
-
-    if (current < playlist.length - 1) {
-
-      localStorage.setItem(
-        "currentVideoIndex",
-        current + 1
-      );
-
-    } else {
-
-      localStorage.setItem(
-        "currentVideoIndex",
-        "0"
-      );
-    }
-  });
+  playVideo();
 </script>
 
 </body>
