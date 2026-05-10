@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-2E0VMFCTM2"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -90,23 +89,21 @@
 
   const tiktokUrl = "https://www.tiktok.com/@shibu_yuu/video/7512383236824141077";
 
-  let current;
+  const navType = performance.getEntriesByType("navigation")[0]?.type;
+  const isReload = navType === "reload";
 
-  if (!sessionStorage.getItem("sessionStarted")) {
-    current = 0;
-    sessionStorage.setItem("sessionStarted", "1");
-  } else {
+  let current = 0;
+
+  if (isReload) {
     current = parseInt(sessionStorage.getItem("nextVideoIndex") || "0", 10);
-
-    if (isNaN(current) || current < 0 || current >= playlist.length) {
-      current = 0;
-    }
+  } else {
+    current = 0;
+    sessionStorage.setItem("nextVideoIndex", "0");
   }
 
-  sessionStorage.setItem(
-    "nextVideoIndex",
-    String((current + 1) % playlist.length)
-  );
+  if (isNaN(current) || current < 0 || current >= playlist.length) {
+    current = 0;
+  }
 
   let soundOn = sessionStorage.getItem("soundOn") === "1";
 
@@ -119,18 +116,52 @@
     }
   }
 
-  function playVideo() {
-    video.src = playlist[current];
-    video.muted = !soundOn;
+  function setNextIndex() {
+    sessionStorage.setItem(
+      "nextVideoIndex",
+      String((current + 1) % playlist.length)
+    );
+  }
+
+  function applySound() {
     video.volume = 1;
+
+    if (soundOn) {
+      video.muted = false;
+      video.removeAttribute("muted");
+    } else {
+      video.muted = true;
+      video.setAttribute("muted", "");
+    }
+  }
+
+  function startPlay() {
+    applySound();
+
+    const p = video.play();
+
+    if (p && typeof p.then === "function") {
+      p.then(() => {
+        track("video_play");
+      }).catch(() => {
+        if (!soundOn) {
+          video.muted = true;
+          video.setAttribute("muted", "");
+          video.play().catch(() => {});
+        }
+      });
+    }
+  }
+
+  function loadCurrentVideo() {
+    setNextIndex();
+
+    video.src = playlist[current];
+    applySound();
     video.load();
 
-    video.play().then(() => {
-      track("video_play");
-    }).catch(() => {
-      video.muted = true;
-      video.play().catch(() => {});
-    });
+    video.onloadedmetadata = startPlay;
+    video.oncanplay = startPlay;
   }
 
   function enableSound() {
@@ -138,15 +169,15 @@
     sessionStorage.setItem("soundOn", "1");
 
     video.muted = false;
+    video.removeAttribute("muted");
     video.volume = 1;
-    video.play().catch(() => {});
 
+    video.play().catch(() => {});
     track("sound_enabled");
   }
 
   function showEndScreen() {
     sessionStorage.setItem("nextVideoIndex", "0");
-
     track("tiktok_button_show");
 
     document.body.innerHTML = `
@@ -173,13 +204,15 @@
       return;
     }
 
+    current++;
+    sessionStorage.setItem("nextVideoIndex", String(current));
     location.reload();
   });
 
   document.addEventListener("pointerdown", enableSound);
   document.addEventListener("touchstart", enableSound);
 
-  playVideo();
+  loadCurrentVideo();
 </script>
 
 </body>
