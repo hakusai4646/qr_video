@@ -90,8 +90,25 @@
 
   const tiktokUrl = "https://www.tiktok.com/@shibu_yuu/video/7512383236824141077";
 
-  let current = 0;
-  let soundOn = false;
+  let current;
+
+  if (!sessionStorage.getItem("sessionStarted")) {
+    current = 0;
+    sessionStorage.setItem("sessionStarted", "1");
+  } else {
+    current = parseInt(sessionStorage.getItem("nextVideoIndex") || "0", 10);
+
+    if (isNaN(current) || current < 0 || current >= playlist.length) {
+      current = 0;
+    }
+  }
+
+  sessionStorage.setItem(
+    "nextVideoIndex",
+    String((current + 1) % playlist.length)
+  );
+
+  let soundOn = sessionStorage.getItem("soundOn") === "1";
 
   function track(name) {
     if (typeof gtag === "function") {
@@ -118,13 +135,18 @@
 
   function enableSound() {
     soundOn = true;
+    sessionStorage.setItem("soundOn", "1");
+
     video.muted = false;
     video.volume = 1;
     video.play().catch(() => {});
+
     track("sound_enabled");
   }
 
   function showEndScreen() {
+    sessionStorage.setItem("nextVideoIndex", "0");
+
     track("tiktok_button_show");
 
     document.body.innerHTML = `
@@ -146,18 +168,16 @@
   video.addEventListener("ended", () => {
     track("video_end");
 
-    current++;
-
-    if (current >= playlist.length) {
+    if (current === playlist.length - 1) {
       showEndScreen();
       return;
     }
 
-    playVideo();
+    location.reload();
   });
 
-  document.addEventListener("pointerdown", enableSound, { once: true });
-  document.addEventListener("touchstart", enableSound, { once: true });
+  document.addEventListener("pointerdown", enableSound);
+  document.addEventListener("touchstart", enableSound);
 
   playVideo();
 </script>
