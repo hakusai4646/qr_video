@@ -4,24 +4,16 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-2E0VMFCTM2"></script>
-
   <script>
     window.dataLayer = window.dataLayer || [];
-
-    function gtag() {
-      dataLayer.push(arguments);
-    }
-
+    function gtag(){ dataLayer.push(arguments); }
     gtag("js", new Date());
-
     gtag("config", "G-2E0VMFCTM2");
   </script>
 
   <style>
-    html,
-    body {
+    html, body {
       margin: 0;
       padding: 0;
       width: 100%;
@@ -42,15 +34,12 @@
     .end-screen {
       width: 100vw;
       height: 100vh;
-
       background: #000;
       color: #fff;
-
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-
       text-align: center;
     }
 
@@ -61,14 +50,10 @@
 
     .end-screen a {
       padding: 16px 28px;
-
       background: #fff;
       color: #000;
-
       text-decoration: none;
-
       border-radius: 999px;
-
       font-size: 18px;
       font-weight: bold;
     }
@@ -102,158 +87,89 @@
     "https://res.cloudinary.com/dl06u7sqw/video/upload/f_mp4,vc_h264,ac_aac/kakko_04_b5xlj1.mp4"
   ];
 
-  const tiktokUrl =
-    "https://www.tiktok.com/@shibu_yuu/video/7512383236824141077?is_from_webapp=1&sender_device=pc&web_id=7274534222295090690";
+  const tiktokUrl = "https://www.tiktok.com/@shibu_yuu/video/7512383236824141077";
 
-  let current = parseInt(
-    sessionStorage.getItem("currentVideoIndex") || "0",
-    10
-  );
+  let current = parseInt(localStorage.getItem("currentVideoIndex") || "0", 10);
 
-  if (
-    isNaN(current) ||
-    current < 0 ||
-    current >= playlist.length
-  ) {
+  if (isNaN(current) || current < 0 || current >= playlist.length) {
     current = 0;
   }
 
-  let soundOn =
-    sessionStorage.getItem("soundOn") === "1";
+  // ここが重要：ページを開いた時点で、次回リロード用に次の番号を保存
+  localStorage.setItem(
+    "currentVideoIndex",
+    String((current + 1) % playlist.length)
+  );
 
-  function track(eventName) {
+  let soundOn = localStorage.getItem("soundOn") === "1";
 
+  function track(name) {
     if (typeof gtag === "function") {
-
-      gtag("event", eventName, {
+      gtag("event", name, {
         video_index: current + 1,
         video_url: playlist[current]
       });
     }
   }
 
-  function applySound() {
-
-    if (soundOn) {
-
-      video.muted = false;
-
-    } else {
-
-      video.muted = true;
-    }
-
-    video.volume = 1;
-  }
-
-  function playVideo(index) {
-
-    current = index;
-
-    sessionStorage.setItem(
-      "currentVideoIndex",
-      String(current)
-    );
-
+  function playVideo() {
     video.src = playlist[current];
-
-    applySound();
-
+    video.muted = !soundOn;
+    video.volume = 1;
     video.load();
 
     video.play().then(() => {
-
       track("video_play");
-
     }).catch(() => {
-
       video.muted = true;
-
       video.play().catch(() => {});
     });
   }
 
   function enableSound() {
-
     soundOn = true;
-
-    sessionStorage.setItem(
-      "soundOn",
-      "1"
-    );
+    localStorage.setItem("soundOn", "1");
 
     video.muted = false;
-
     video.volume = 1;
-
     video.play().catch(() => {});
 
     track("sound_enabled");
   }
 
   function showEndScreen() {
-
-    sessionStorage.setItem(
-      "currentVideoIndex",
-      "0"
-    );
-
+    localStorage.setItem("currentVideoIndex", "0");
     track("tiktok_button_show");
 
     document.body.innerHTML = `
       <div class="end-screen">
         <p>TikTokも見てね</p>
-
-        <a
-          href="${tiktokUrl}"
-          target="_blank"
-          rel="noopener"
-          id="tiktokLink"
-        >
+        <a href="${tiktokUrl}" target="_blank" rel="noopener" id="tiktokLink">
           TikTokを見る
         </a>
       </div>
     `;
 
-    const tiktokLink =
-      document.getElementById("tiktokLink");
-
-    tiktokLink.addEventListener("click", () => {
-
+    document.getElementById("tiktokLink").addEventListener("click", () => {
       track("tiktok_click");
     });
   }
 
   video.addEventListener("ended", () => {
-
     track("video_end");
 
     if (current === playlist.length - 1) {
-
       showEndScreen();
-
       return;
     }
 
-    current++;
-
-    playVideo(current);
+    location.reload();
   });
 
-  document.addEventListener(
-    "click",
-    enableSound,
-    { once: true }
-  );
+  document.addEventListener("pointerdown", enableSound);
+  document.addEventListener("touchstart", enableSound);
 
-  document.addEventListener(
-    "touchstart",
-    enableSound,
-    { once: true }
-  );
-
-  playVideo(current);
-
+  playVideo();
 </script>
 
 </body>
