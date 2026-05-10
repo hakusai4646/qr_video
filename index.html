@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+  <!-- Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-2E0VMFCTM2"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -89,19 +90,8 @@
 
   const tiktokUrl = "https://www.tiktok.com/@shibu_yuu/video/7512383236824141077";
 
-  let current = parseInt(localStorage.getItem("currentVideoIndex") || "0", 10);
-
-  if (isNaN(current) || current < 0 || current >= playlist.length) {
-    current = 0;
-  }
-
-  // ここが重要：ページを開いた時点で、次回リロード用に次の番号を保存
-  localStorage.setItem(
-    "currentVideoIndex",
-    String((current + 1) % playlist.length)
-  );
-
-  let soundOn = localStorage.getItem("soundOn") === "1";
+  let current = 0;
+  let soundOn = false;
 
   function track(name) {
     if (typeof gtag === "function") {
@@ -128,17 +118,13 @@
 
   function enableSound() {
     soundOn = true;
-    localStorage.setItem("soundOn", "1");
-
     video.muted = false;
     video.volume = 1;
     video.play().catch(() => {});
-
     track("sound_enabled");
   }
 
   function showEndScreen() {
-    localStorage.setItem("currentVideoIndex", "0");
     track("tiktok_button_show");
 
     document.body.innerHTML = `
@@ -151,23 +137,27 @@
     `;
 
     document.getElementById("tiktokLink").addEventListener("click", () => {
-      track("tiktok_click");
+      if (typeof gtag === "function") {
+        gtag("event", "tiktok_click");
+      }
     });
   }
 
   video.addEventListener("ended", () => {
     track("video_end");
 
-    if (current === playlist.length - 1) {
+    current++;
+
+    if (current >= playlist.length) {
       showEndScreen();
       return;
     }
 
-    location.reload();
+    playVideo();
   });
 
-  document.addEventListener("pointerdown", enableSound);
-  document.addEventListener("touchstart", enableSound);
+  document.addEventListener("pointerdown", enableSound, { once: true });
+  document.addEventListener("touchstart", enableSound, { once: true });
 
   playVideo();
 </script>
